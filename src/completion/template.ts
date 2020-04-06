@@ -11,6 +11,7 @@ import {
   workspace,
   Range,
   EndOfLine,
+  MarkdownString,
 } from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -66,16 +67,33 @@ export class TemplateCompletion implements CompletionItemProvider {
     }
     const completionList: CompletionItem[] = [];
     const propsList = this._componentMetaDataMap[matchTagName].props;
+    const eventList = this._componentMetaDataMap[matchTagName].events;
     if (propsList) {
       const propsCompletion: CompletionItem[] = propsList.map((prop) => {
+        const documentation = JSON.stringify(prop, null, 4);
         return {
           label: prop.name,
-          sortText: ` ${prop.name}`
+          sortText: ` ${prop.name}`,
+          kind: CompletionItemKind.Property,
+          detail: 'prop',
+          documentation,
         };
       });
       completionList.push(...propsCompletion);
     }
-
+    if (eventList) {
+      const eventsCompletion: CompletionItem[] = eventList.map((event) => {
+        const documentation = JSON.stringify(event, null, 4);
+        return {
+          label: event.name,
+          sortText: ` ${event.name}`,
+          kind: CompletionItemKind.Function,
+          detail: 'event',
+          documentation,
+        };
+      });
+      completionList.push(...eventsCompletion);
+    }
     return completionList;
   }
 }
