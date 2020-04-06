@@ -21,7 +21,8 @@
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "yarn run compile && node ./node_modules/vscode/bin/test"
+        "test": "yarn run compile && node ./node_modules/vscode/bin/test",
+        "rebuild": "electron-rebuild -v 7.1.11 tree-sitter"
     },
     "devDependencies": {
         "@types/eslint": "^6.1.9",
@@ -30,8 +31,15 @@
         "@types/typescript": "^2.0.0",
         "@typescript-eslint/eslint-plugin": "^2.26.0",
         "@typescript-eslint/parser": "^2.26.0",
+        "electron-rebuild": "^1.10.1",
         "eslint": "^6.8.0",
         "typescript": "^3.8.3",
         "vscode": "^1.1.36"
+    },
+    "dependencies": {
+        "@types/babel__traverse": "^7.0.9",
+        "@vuese/parser": "^2.4.3",
+        "tree-sitter": "^0.16.1",
+        "tree-sitter-vue": "^0.1.0"
     }
 }

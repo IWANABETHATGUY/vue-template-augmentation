@@ -15,13 +15,27 @@ import {
 import * as path from 'path';
 import * as fs from 'fs';
 import { Nullable } from '../types';
+import Parser, { Tree } from 'tree-sitter';
+import Vue from 'tree-sitter-vue';
+import { ParserResult } from '@vuese/parser';
+
+const parser = new Parser();
+parser.setLanguage(Vue);
+
+// TODO: remove
 export class TemplateCompletion implements CompletionItemProvider {
   private _disposable: Disposable;
-
+  private _componentMetaDataMap: Record<string, ParserResult> = {};
+  private _preTree!: Tree;
   constructor() {
     const subscriptions: Disposable[] = [];
     this._disposable = Disposable.from(...subscriptions);
   }
+
+  public setComponentMetaDataMap(map: Record<string, ParserResult>): void {
+    this._componentMetaDataMap = map;
+  }
+
   dispose(): void {
     this._disposable.dispose();
   }
@@ -34,32 +48,33 @@ export class TemplateCompletion implements CompletionItemProvider {
     if (document.languageId !== 'vue') {
       return [];
     }
-    console.time('completionVueTemplate');
-    const reg = /<([\w-]+)[\s\S]*?((?:\/)?>)/g;
-    let execResult: Nullable<RegExpExecArray>;
-    // TODO: benchmark 测试下先使用 template 在 经一部 正则匹配
     let matchTagName = '';
-    const content = document.getText();
-    const offset = document.offsetAt(position);
-    // 查看是否在某一个 tag 的前半部分内， -> <Compoment> 或者<Component/>
-    while ((execResult = reg.exec(content))) {
-      const [match, tagName, endPart] = execResult;
-      const lowerBound = execResult.index + tagName.length;
-      const upperBound = execResult.index + match.length - endPart.length;
-      if (offset > lowerBound && offset <= upperBound) {
-        matchTagName = tagName;
-        break
-      } else if (offset < lowerBound) {
-        break;
-      }
-    }
+    const curTree = parser.parse(document.getText(), this._preTree);
+    const curNode = curTree.rootNode.namedDescendantForPosition({
+      column: position.character,
+      row: position.line,
+    });
 
+    const nodelist = curNode.descendantsOfType('tag_name');
+    matchTagName = nodelist[0].text;
     if (!matchTagName) {
-      return []
+      return [];
+    }
+    matchTagName = matchTagName.replace(/[-_]/g, '').toUpperCase();
+    if (!this._componentMetaDataMap[matchTagName]) {
+      return [];
     }
     const completionList: CompletionItem[] = [];
-
-    console.timeEnd('completionVueTemplate');
+    const propsList = this._componentMetaDataMap[matchTagName].props;
+    if (propsList) {
+      const propsCompletion: CompletionItem[] = propsList.map((prop) => {
+        return {
+          label: prop.name,
+          sortText: ` ${prop.name}`
+        };
+      });
+      completionList.push(...propsCompletion);
+    }
 
     return completionList;
   }

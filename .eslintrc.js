@@ -5,4 +5,9 @@ module.exports = {
   env: {
     node: true,
   },
+  overrides: [
+    {
+      files: ["*.ts"]
+    }
+  ]
 };
