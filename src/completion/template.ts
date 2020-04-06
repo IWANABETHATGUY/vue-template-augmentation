@@ -10,8 +10,7 @@ import {
   Disposable,
   workspace,
   Range,
-  EndOfLine,
-  MarkdownString,
+  languages,
 } from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -22,7 +21,6 @@ import { ParserResult } from '@vuese/parser';
 
 const parser = new Parser();
 parser.setLanguage(Vue);
-
 // TODO: remove
 export class TemplateCompletion implements CompletionItemProvider {
   private _disposable: Disposable;
@@ -75,7 +73,7 @@ export class TemplateCompletion implements CompletionItemProvider {
           label: prop.name,
           sortText: ` ${prop.name}`,
           kind: CompletionItemKind.Property,
-          detail: 'prop',
+          detail: `${matchTagName}:prop`,
           documentation,
         };
       });
@@ -88,7 +86,7 @@ export class TemplateCompletion implements CompletionItemProvider {
           label: event.name,
           sortText: ` ${event.name}`,
           kind: CompletionItemKind.Function,
-          detail: 'event',
+          detail: `${matchTagName}:event`,
           documentation,
         };
       });
