@@ -4,20 +4,17 @@
     "description": "",
     "version": "0.0.1",
     "engines": {
-        "vscode": "^1.43.0"
+        "vscode": "^1.41.0"
     },
     "categories": [
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onLanguage:vue"
     ],
     "main": "./out/extension",
     "contributes": {
-        "commands": [{
-            "command": "extension.sayHello",
-            "title": "Hello World"
-        }]
+        "commands": []
     },
     "scripts": {
         "vscode:prepublish": "yarn run compile",
@@ -27,9 +24,14 @@
         "test": "yarn run compile && node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.21",
+        "@types/eslint": "^6.1.9",
+        "@types/mocha": "^2.2.42",
         "@types/node": "^8.10.25",
-        "@types/mocha": "^2.2.42"
+        "@types/typescript": "^2.0.0",
+        "@typescript-eslint/eslint-plugin": "^2.26.0",
+        "@typescript-eslint/parser": "^2.26.0",
+        "eslint": "^6.8.0",
+        "typescript": "^3.8.3",
+        "vscode": "^1.1.36"
     }
 }
