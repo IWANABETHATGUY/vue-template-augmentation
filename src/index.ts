@@ -1,7 +1,6 @@
 import {
   ExtensionContext,
   languages,
-  CompletionItemProvider,
   window,
   TextDocument,
   workspace,
@@ -175,7 +174,7 @@ export class VueTemplateCompletion {
     if (document.languageId !== 'vue') {
       return;
     }
-    const index = ws.index;
+    // const index = ws.index;
     const content = document.getText();
     // get this file's dirname e.g: /test/test.vue -> `/test`
     const dirName = path.dirname(document.fileName);
@@ -193,7 +192,7 @@ export class VueTemplateCompletion {
       } else {
         absolutePath = path.resolve(dirName, pathOrAlias);
       }
-      
+
       const extname = path.extname(absolutePath);
       if (!extname) {
         absolutePath += '.vue';

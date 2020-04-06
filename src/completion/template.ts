@@ -8,13 +8,7 @@ import {
   TextDocument,
   CompletionItemKind,
   Disposable,
-  workspace,
-  Range,
-  languages,
 } from 'vscode';
-import * as path from 'path';
-import * as fs from 'fs';
-import { Nullable } from '../types';
 import Parser, { Tree } from 'tree-sitter';
 import Vue from 'tree-sitter-vue';
 import { ParserResult } from '@vuese/parser';
@@ -96,13 +90,4 @@ export class TemplateCompletion implements CompletionItemProvider {
   }
 }
 
-function getInserPathRange(
-  range: Range,
-  document: TextDocument,
-  length: number
-): Range {
-  const numberOfEndPoint = document.offsetAt(range.end);
-  const end = document.positionAt(numberOfEndPoint - 1);
-  const start = document.positionAt(numberOfEndPoint - length - 1);
-  return new Range(start, end);
-}
+
