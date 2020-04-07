@@ -82,7 +82,7 @@ function generateSFCMetaData(absolutePath: string): Promise<ParserResult> {
 }
 
 /**
- * 
+ *
  * @param aliasMap 路径别名映射到相对目录的map
  * @param pathAlias 带有路径别名的路径
  */
@@ -92,9 +92,9 @@ function aliasToRelativePath(
 ): string {
   const [alias, ...restPath] = pathAlias.split('/');
   if (!aliasMap[alias]) {
-    return ""
+    return '';
   }
-  return path.resolve(aliasMap[alias], ...restPath)
+  return path.resolve(aliasMap[alias], ...restPath);
 }
 
 export class VueTemplateCompletion {
@@ -184,11 +184,11 @@ export class VueTemplateCompletion {
       pathOrAlias = pathOrAlias.slice(1, -1);
       let absolutePath: string;
       if (!isRelativePath(pathOrAlias)) {
-        pathOrAlias = aliasToRelativePath(this._aliasMap, pathOrAlias)
+        pathOrAlias = aliasToRelativePath(this._aliasMap, pathOrAlias);
         if (!pathOrAlias) {
-          continue
+          continue;
         }
-        absolutePath = pathOrAlias
+        absolutePath = pathOrAlias;
       } else {
         absolutePath = path.resolve(dirName, pathOrAlias);
       }
