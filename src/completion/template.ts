@@ -8,17 +8,25 @@ import {
   TextDocument,
   CompletionItemKind,
   Disposable,
+  MarkdownString,
 } from 'vscode';
 import Parser, { Tree } from 'tree-sitter';
 import Vue from 'tree-sitter-vue';
 import { ParserResult } from '@vuese/parser';
+type CompletionMap = {
+  event: CompletionItem[];
+  prop: CompletionItem[];
+};
+type ComponentCompletionMap = {
+  [componentName: string]: CompletionMap;
+};
 
 const parser = new Parser();
 parser.setLanguage(Vue);
-// TODO: remove
 export class TemplateCompletion implements CompletionItemProvider {
   private _disposable: Disposable;
-  private _componentMetaDataMap: Record<string, ParserResult> = {};
+  private _componentMetaDataMap: Record<string, ParserResult> = {}
+  private _completionMap: ComponentCompletionMap = {};
   private _preTree!: Tree;
   constructor() {
     const subscriptions: Disposable[] = [];
@@ -27,6 +35,51 @@ export class TemplateCompletion implements CompletionItemProvider {
 
   public setComponentMetaDataMap(map: Record<string, ParserResult>): void {
     this._componentMetaDataMap = map;
+    if (Object.keys(this._componentMetaDataMap).length) {
+      this.generationCompletion()
+    }
+  }
+  /**
+   * 预先生成completion，缓存
+   */
+  private generationCompletion(): void {
+    Object.keys(this._componentMetaDataMap).forEach((componentName) => {
+      const propsList = this._componentMetaDataMap[componentName].props;
+      const eventList = this._componentMetaDataMap[componentName].events;
+      this._completionMap[componentName] = {event: [], prop: []}
+      if (propsList) {
+        const propsCompletion: CompletionItem[] = propsList.map((prop) => {
+          const documentation = JSON.stringify(prop, null, 4);
+          return {
+            label: prop.name,
+            sortText: ` ${prop.name}`,
+            kind: CompletionItemKind.Property,
+            detail: `${componentName}:prop`,
+            documentation: new MarkdownString('').appendCodeblock(
+              documentation,
+              'json'
+            ),
+          };
+        });
+        this._completionMap[componentName].prop = propsCompletion;
+      }
+      if (eventList) {
+        const eventsCompletion: CompletionItem[] = eventList.filter(event => !event.isSync).map((event) => {
+          const documentation = JSON.stringify(event, null, 4);
+          return {
+            label: event.name,
+            sortText: ` ${event.name}`,
+            kind: CompletionItemKind.Function,
+            detail: `${componentName}:event`,
+            documentation: new MarkdownString('').appendCodeblock(
+              documentation,
+              'json'
+            ),
+          };
+        });
+        this._completionMap[componentName].event = eventsCompletion;
+      }
+    });
   }
 
   dispose(): void {
@@ -58,36 +111,8 @@ export class TemplateCompletion implements CompletionItemProvider {
       return [];
     }
     const completionList: CompletionItem[] = [];
-    const propsList = this._componentMetaDataMap[matchTagName].props;
-    const eventList = this._componentMetaDataMap[matchTagName].events;
-    if (propsList) {
-      const propsCompletion: CompletionItem[] = propsList.map((prop) => {
-        const documentation = JSON.stringify(prop, null, 4);
-        return {
-          label: prop.name,
-          sortText: ` ${prop.name}`,
-          kind: CompletionItemKind.Property,
-          detail: `${matchTagName}:prop`,
-          documentation,
-        };
-      });
-      completionList.push(...propsCompletion);
-    }
-    if (eventList) {
-      const eventsCompletion: CompletionItem[] = eventList.map((event) => {
-        const documentation = JSON.stringify(event, null, 4);
-        return {
-          label: event.name,
-          sortText: ` ${event.name}`,
-          kind: CompletionItemKind.Function,
-          detail: `${matchTagName}:event`,
-          documentation,
-        };
-      });
-      completionList.push(...eventsCompletion);
-    }
+    completionList.push(...this._completionMap[matchTagName].event);
+    completionList.push(...this._completionMap[matchTagName].prop);
     return completionList;
   }
 }
-
-

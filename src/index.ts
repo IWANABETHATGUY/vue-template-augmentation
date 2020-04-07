@@ -204,7 +204,7 @@ export class VueTemplateCompletion {
         importMap[componentName] = absolutePath;
       }
     }
-    Object.keys(importMap).forEach(async (componentName) => {
+    const promiseList = Object.keys(importMap).map(async (componentName) => {
       try {
         const ParserResult = await generateSFCMetaData(
           importMap[componentName]
@@ -216,5 +216,6 @@ export class VueTemplateCompletion {
         console.error(err);
       }
     });
+    await Promise.all(promiseList)
   }
 }
