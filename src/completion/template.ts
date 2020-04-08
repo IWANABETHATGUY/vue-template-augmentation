@@ -9,8 +9,9 @@ import {
   CompletionItemKind,
   Disposable,
   MarkdownString,
+  SnippetString,
 } from 'vscode';
-import Parser, { Tree } from 'tree-sitter';
+import Parser, { Tree, SyntaxNode } from 'tree-sitter';
 import Vue from 'tree-sitter-vue';
 import { ParserResult } from '@vuese/parser';
 type CompletionMap = {
@@ -25,7 +26,7 @@ const parser = new Parser();
 parser.setLanguage(Vue);
 export class TemplateCompletion implements CompletionItemProvider {
   private _disposable: Disposable;
-  private _componentMetaDataMap: Record<string, ParserResult> = {}
+  private _componentMetaDataMap: Record<string, ParserResult> = {};
   private _completionMap: ComponentCompletionMap = {};
   private _preTree!: Tree;
   constructor() {
@@ -36,7 +37,7 @@ export class TemplateCompletion implements CompletionItemProvider {
   public setComponentMetaDataMap(map: Record<string, ParserResult>): void {
     this._componentMetaDataMap = map;
     if (Object.keys(this._componentMetaDataMap).length) {
-      this.generationCompletion()
+      this.generationCompletion();
     }
   }
   /**
@@ -46,10 +47,10 @@ export class TemplateCompletion implements CompletionItemProvider {
     Object.keys(this._componentMetaDataMap).forEach((componentName) => {
       const propsList = this._componentMetaDataMap[componentName].props;
       const eventList = this._componentMetaDataMap[componentName].events;
-      this._completionMap[componentName] = {event: [], prop: []}
+      this._completionMap[componentName] = { event: [], prop: [] };
       if (propsList) {
         const propsCompletion: CompletionItem[] = propsList.map((prop) => {
-          const documentation = JSON.stringify(prop, null, 4);
+          const documentation = JSON.stringify(prop, null, 2);
           return {
             label: prop.name,
             sortText: ` ${prop.name}`,
@@ -64,19 +65,21 @@ export class TemplateCompletion implements CompletionItemProvider {
         this._completionMap[componentName].prop = propsCompletion;
       }
       if (eventList) {
-        const eventsCompletion: CompletionItem[] = eventList.filter(event => !event.isSync).map((event) => {
-          const documentation = JSON.stringify(event, null, 4);
-          return {
-            label: event.name,
-            sortText: ` ${event.name}`,
-            kind: CompletionItemKind.Function,
-            detail: `${componentName}:event`,
-            documentation: new MarkdownString('').appendCodeblock(
-              documentation,
-              'json'
-            ),
-          };
-        });
+        const eventsCompletion: CompletionItem[] = eventList
+          .filter((event) => !event.isSync)
+          .map((event) => {
+            const documentation = JSON.stringify(event, null, 2);
+            return {
+              label: event.name,
+              sortText: ` ${event.name}`,
+              kind: CompletionItemKind.Method,
+              detail: `${componentName}:event`,
+              documentation: new MarkdownString('').appendCodeblock(
+                documentation,
+                'json'
+              ),
+            };
+          });
         this._completionMap[componentName].event = eventsCompletion;
       }
     });
@@ -95,12 +98,20 @@ export class TemplateCompletion implements CompletionItemProvider {
       return [];
     }
     let matchTagName = '';
-    const curTree = parser.parse(document.getText(), this._preTree);
-    const curNode = curTree.rootNode.namedDescendantForPosition({
+    const curTree = parser.parse(document.getText());
+    // use any due to SyntaxNode don't have typeId but run time have.
+    let curNode: any = curTree.rootNode.namedDescendantForPosition({
       column: position.character,
       row: position.line,
     });
-
+    // [39, 43].includes(curNode.parent.typeId)
+    if (
+      curNode.typeId === 65535 &&
+      curNode.parent &&
+      (curNode.parent.typeId === 39 || curNode.parent.typeId === 43)
+    ) {
+      curNode = curNode.parent;
+    }
     const nodelist = curNode.descendantsOfType('tag_name');
     matchTagName = nodelist[0].text;
     if (!matchTagName) {
@@ -111,8 +122,28 @@ export class TemplateCompletion implements CompletionItemProvider {
       return [];
     }
     const completionList: CompletionItem[] = [];
-    completionList.push(...this._completionMap[matchTagName].event);
-    completionList.push(...this._completionMap[matchTagName].prop);
+    if (context.triggerCharacter) {
+      if (context.triggerCharacter === '@') {
+        completionList.push(
+          ...this._completionMap[matchTagName].event.map((item) => ({
+            ...item,
+            insertText: new SnippetString(`${item.label}="$1"$2`),
+          }))
+        );
+      } else if (context.triggerCharacter === ':') {
+        completionList.push(
+          ...this._completionMap[matchTagName].prop.map((item) => ({
+            ...item,
+            insertText: new SnippetString(`${item.label}="$1"$2`),
+          }))
+        );
+      }
+    } else {
+      completionList.push(
+        ...this._completionMap[matchTagName].event,
+        ...this._completionMap[matchTagName].prop
+      );
+    }
     return completionList;
   }
 }
