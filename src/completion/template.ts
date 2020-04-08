@@ -11,7 +11,7 @@ import {
   MarkdownString,
   SnippetString,
 } from 'vscode';
-import Parser, { Tree, SyntaxNode } from 'tree-sitter';
+import Parser, { Tree } from 'tree-sitter';
 import Vue from 'tree-sitter-vue';
 import { ParserResult } from '@vuese/parser';
 type CompletionMap = {
@@ -97,19 +97,29 @@ export class TemplateCompletion implements CompletionItemProvider {
     if (document.languageId !== 'vue') {
       return [];
     }
+    let isDirectiveAttribute = false;
     let matchTagName = '';
+    let directiveName = '';
     const curTree = parser.parse(document.getText());
     // use any due to SyntaxNode don't have typeId but run time have.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let curNode: any = curTree.rootNode.namedDescendantForPosition({
       column: position.character,
       row: position.line,
     });
     // [39, 43].includes(curNode.parent.typeId)
     if (
-      curNode.typeId === 65535 &&
       curNode.parent &&
-      (curNode.parent.typeId === 39 || curNode.parent.typeId === 43)
+      // if curNode is a directive_attribut
+      (curNode.type === 'directive_attribute' ||
+        // if curNode is ERROR
+        (curNode.typeId === 65535 &&
+          (curNode.parent.typeId === 39 || curNode.parent.typeId === 43)))
     ) {
+      if (curNode.type === 'directive_attribute') {
+        directiveName = curNode.descendantsOfType('directive_name')[0].text;
+        isDirectiveAttribute = true;
+      }
       curNode = curNode.parent;
     }
     const nodelist = curNode.descendantsOfType('tag_name');
@@ -138,11 +148,16 @@ export class TemplateCompletion implements CompletionItemProvider {
           }))
         );
       }
-    } else {
-      completionList.push(
-        ...this._completionMap[matchTagName].event,
-        ...this._completionMap[matchTagName].prop
-      );
+    } else if (isDirectiveAttribute) {
+      if (directiveName === '@') {
+        completionList.push(
+          ...this._completionMap[matchTagName].event,
+        );
+      } else if(directiveName === ':') {
+        completionList.push(
+          ...this._completionMap[matchTagName].prop
+        );
+      }
     }
     return completionList;
   }
