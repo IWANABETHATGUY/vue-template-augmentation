@@ -71,7 +71,8 @@ export class VueTemplateCompletion {
         [{ language: 'vue', scheme: 'file' }],
         this._completion,
         ':',
-        '@'
+        '@',
+        '#'
       )
     );
   }
