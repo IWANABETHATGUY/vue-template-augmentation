@@ -11,9 +11,9 @@ import {
   MarkdownString,
   SnippetString,
 } from 'vscode';
-import Parser from 'tree-sitter';
-import Vue from 'tree-sitter-vue';
+
 import { SFCMetaData } from '../types';
+import { VueTemplateCompletion } from '..';
 
 type CompletionMap = {
   event: CompletionItem[];
@@ -33,17 +33,17 @@ enum MyCompletionPositionKind {
 
 const directiveAttributeRegExp = /[\w_@\-\:]+/;
 
-const parser = new Parser();
-parser.setLanguage(Vue);
+
 
 export class TemplateCompletion implements CompletionItemProvider {
   private _disposable: Disposable;
   private _componentMetaDataMap: Record<string, SFCMetaData> = {};
   private _completionMap: ComponentCompletionMap = {};
-  // private _preTree!: Tree;
-  constructor() {
+  private _context: VueTemplateCompletion;
+  constructor(context: VueTemplateCompletion) {
     const subscriptions: Disposable[] = [];
     this._disposable = Disposable.from(...subscriptions);
+    this._context = context;
   }
 
   dispose(): void {
@@ -62,14 +62,16 @@ export class TemplateCompletion implements CompletionItemProvider {
     let positionKind = MyCompletionPositionKind.StartTag;
     let matchTagName = '';
     let directiveName = '';
-    let attributeName = ''
-    const curTree = parser.parse(document.getText());
+    let attributeName = '';
+    const curTree = this._context.parser.parse(document.getText());
+    this._context.tree = curTree;
     // use any due to SyntaxNode don't have typeId but run time have.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let curNode = curTree.rootNode.namedDescendantForPosition({
       column: position.character,
       row: position.line,
     });
+
     // [39, 43].includes(curNode.parent.typeId)
     if (
       (curNode.parent &&
@@ -88,7 +90,7 @@ export class TemplateCompletion implements CompletionItemProvider {
       } else if (curNode.type === 'quoted_attribute_value') {
         positionKind = MyCompletionPositionKind.Attribute;
         curNode = curNode.parent;
-        attributeName = curNode.descendantsOfType('attribute_name')[0]?.text
+        attributeName = curNode.descendantsOfType('attribute_name')[0]?.text;
       }
       if (curNode.parent) {
         curNode = curNode.parent;
@@ -163,7 +165,9 @@ export class TemplateCompletion implements CompletionItemProvider {
           break;
         case 2:
           if (attributeName === 'slot') {
-            completionList.push(...this.getSlotCompletionFromCurNode(curNode.parent, this));
+            completionList.push(
+              ...this.getSlotCompletionFromCurNode(curNode.parent, this)
+            );
           }
           break;
       }

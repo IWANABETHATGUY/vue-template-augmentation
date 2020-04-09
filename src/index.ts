@@ -8,18 +8,30 @@ import {
 import { TemplateCompletion } from './completion/template';
 import * as path from 'path';
 import { Nullable, SFCMetaData } from './types';
-import { isRelativePath, asyncFileExist, asyncReadFile, pathAliasMappingGenerator, aliasToRelativePath, generateSFCMetaData } from './utils';
-
-
-
+import {
+  isRelativePath,
+  asyncFileExist,
+  asyncReadFile,
+  pathAliasMappingGenerator,
+  aliasToRelativePath,
+  generateSFCMetaData,
+} from './utils';
+import { TemplateTagDefinition } from './defination';
+import Parser, { Tree } from 'tree-sitter';
+import Vue from 'tree-sitter-vue';
 
 export class VueTemplateCompletion {
   private _context: ExtensionContext;
   private _completion!: TemplateCompletion;
-  private _sfcMetaDataMap!: Record<string, SFCMetaData>;
+ _sfcMetaDataMap!: Record<string, SFCMetaData>;
   private _aliasMap: Record<string, string> = {};
+  tree!: Tree;
+  parser: Parser;
+  private _tagDefination!: TemplateTagDefinition;
   constructor(context: ExtensionContext) {
     this._context = context;
+    this.parser = new Parser();
+    this.parser.setLanguage(Vue);
     this.init();
     window.onDidChangeActiveTextEditor(async (event) => {
       if (event) {
@@ -29,9 +41,10 @@ export class VueTemplateCompletion {
     });
   }
 
-  init(): void {
+  private init(): void {
     this.initPathAliasMap();
     this.initCompletion();
+    this.initDefination();
   }
 
   private async initPathAliasMap(): Promise<void> {
@@ -65,7 +78,7 @@ export class VueTemplateCompletion {
   }
 
   private initCompletion(): void {
-    this._completion = new TemplateCompletion();
+    this._completion = new TemplateCompletion(this);
     this._context.subscriptions.push(
       languages.registerCompletionItemProvider(
         [{ language: 'vue', scheme: 'file' }],
@@ -73,6 +86,16 @@ export class VueTemplateCompletion {
         ':',
         '@',
         '#'
+      )
+    );
+  }
+
+  private initDefination(): void {
+    this._tagDefination = new TemplateTagDefinition(this);
+    this._context.subscriptions.push(
+      languages.registerDefinitionProvider(
+        [{ language: 'vue', scheme: 'file' }],
+        this._tagDefination,
       )
     );
   }
@@ -119,8 +142,10 @@ export class VueTemplateCompletion {
       }
       if (await asyncFileExist(absolutePath)) {
         importMap[componentName] = absolutePath;
-      } else if (await asyncFileExist(absolutePath.slice(0, -4) + '/index.vue')) {
-        importMap[componentName] = absolutePath.slice(0, -4) + '/index.vue'
+      } else if (
+        await asyncFileExist(absolutePath.slice(0, -4) + '/index.vue')
+      ) {
+        importMap[componentName] = absolutePath.slice(0, -4) + '/index.vue';
       }
     }
     const promiseList = Object.keys(importMap).map(async (componentName) => {
@@ -133,13 +158,12 @@ export class VueTemplateCompletion {
             absolutePath: importMap[componentName],
             parseResult: ParserResult,
             componentName,
-
           };
         }
       } catch (err) {
         console.error(err);
       }
     });
-    await Promise.all(promiseList)
+    await Promise.all(promiseList);
   }
 }
