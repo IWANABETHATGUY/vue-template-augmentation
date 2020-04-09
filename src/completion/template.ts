@@ -205,7 +205,8 @@ export class TemplateCompletion implements CompletionItemProvider {
       return [];
     }
     const tagNodeList = targetNode.descendantsOfType('tag_name');
-    const matchTagName = tagNodeList[0].text;
+    let matchTagName = tagNodeList[0].text;
+    matchTagName = matchTagName.replace(/[-_]/g, '').toUpperCase();
     if (!matchTagName) {
       return [];
     }
