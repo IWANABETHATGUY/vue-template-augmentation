@@ -62,6 +62,7 @@ export class TemplateCompletion implements CompletionItemProvider {
     let positionKind = MyCompletionPositionKind.StartTag;
     let matchTagName = '';
     let directiveName = '';
+    let attributeName = ''
     const curTree = parser.parse(document.getText());
     // use any due to SyntaxNode don't have typeId but run time have.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,22 +72,29 @@ export class TemplateCompletion implements CompletionItemProvider {
     });
     // [39, 43].includes(curNode.parent.typeId)
     if (
-      curNode.parent &&
-      // if curNode is a directive_attribut
-      (curNode.type === 'directive_attribute' ||
-        // if curNode is ERROR
-        (curNode.typeId === 65535 &&
-          (curNode.parent.typeId === 39 || curNode.parent.typeId === 43)))
+      (curNode.parent &&
+        // if curNode is a directive_attribut
+        (curNode.type === 'directive_attribute' ||
+          // if curNode is ERROR
+          (curNode.typeId === 65535 &&
+            (curNode.parent.typeId === 39 || curNode.parent.typeId === 43)))) ||
+      // if in attribute and slot
+      (curNode.type === 'quoted_attribute_value' &&
+        curNode.parent.type === 'attribute')
     ) {
       if (curNode.type === 'directive_attribute') {
         directiveName = curNode.descendantsOfType('directive_name')[0].text;
         positionKind = MyCompletionPositionKind.DirectiveAttribute;
+      } else if (curNode.type === 'quoted_attribute_value') {
+        positionKind = MyCompletionPositionKind.Attribute;
+        curNode = curNode.parent;
+        attributeName = curNode.descendantsOfType('attribute_name')[0]?.text
       }
       curNode = curNode.parent;
     }
     // assert here curNode type is start_tag
     if (curNode.type !== 'start_tag' && curNode.type !== 'self_closing_tag') {
-      return []
+      return [];
     }
     const nodelist = curNode.descendantsOfType('tag_name');
     matchTagName = nodelist[0].text;
@@ -124,14 +132,17 @@ export class TemplateCompletion implements CompletionItemProvider {
                 insertText: new SnippetString(`${item.label}="$1"$2`),
               }))
             );
-          } else if (word.startsWith('v-slot:') && matchTagName === 'TEMPLATE') {
+          } else if (
+            word.startsWith('v-slot:') &&
+            matchTagName === 'TEMPLATE'
+          ) {
             completionList.push(
               ...this.getSlotCompletionFromCurNode(curNode.parent, this)
             );
           }
         }
       } else if (
-        matchTagName === 'TEMPLATE' && 
+        matchTagName === 'TEMPLATE' &&
         context.triggerCharacter === '#' &&
         positionKind === MyCompletionPositionKind.StartTag
       ) {
@@ -149,6 +160,9 @@ export class TemplateCompletion implements CompletionItemProvider {
           }
           break;
         case 2:
+          if (attributeName === 'slot') {
+            completionList.push(...this.getSlotCompletionFromCurNode(curNode.parent, this));
+          }
           break;
       }
       // if (positionKind === CompletionPositionKind.DirectiveAttribute) {
@@ -175,7 +189,7 @@ export class TemplateCompletion implements CompletionItemProvider {
     context: TemplateCompletion
   ): CompletionItem[] {
     if (curNode.type === 'element' && curNode.parent) {
-      curNode = curNode.parent
+      curNode = curNode.parent;
     }
     let targetNode = curNode;
     while (targetNode && targetNode.type !== 'element') {
