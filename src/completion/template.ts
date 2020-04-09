@@ -11,13 +11,15 @@ import {
   MarkdownString,
   SnippetString,
 } from 'vscode';
-import Parser, { Tree } from 'tree-sitter';
+import Parser from 'tree-sitter';
 import Vue from 'tree-sitter-vue';
-import { ParserResult } from '@vuese/parser';
+import { SFCMetaData } from '../types';
+
 type CompletionMap = {
   event: CompletionItem[];
   prop: CompletionItem[];
 };
+
 type ComponentCompletionMap = {
   [componentName: string]: CompletionMap;
 };
@@ -26,15 +28,15 @@ const parser = new Parser();
 parser.setLanguage(Vue);
 export class TemplateCompletion implements CompletionItemProvider {
   private _disposable: Disposable;
-  private _componentMetaDataMap: Record<string, ParserResult> = {};
+  private _componentMetaDataMap: Record<string, SFCMetaData> = {};
   private _completionMap: ComponentCompletionMap = {};
-  private _preTree!: Tree;
+  // private _preTree!: Tree;
   constructor() {
     const subscriptions: Disposable[] = [];
     this._disposable = Disposable.from(...subscriptions);
   }
 
-  public setComponentMetaDataMap(map: Record<string, ParserResult>): void {
+  public setComponentMetaDataMap(map: Record<string, SFCMetaData>): void {
     this._componentMetaDataMap = map;
     if (Object.keys(this._componentMetaDataMap).length) {
       this.generationCompletion();
@@ -44,10 +46,13 @@ export class TemplateCompletion implements CompletionItemProvider {
    * 预先生成completion，缓存
    */
   private generationCompletion(): void {
-    Object.keys(this._componentMetaDataMap).forEach((componentName) => {
-      const propsList = this._componentMetaDataMap[componentName].props;
-      const eventList = this._componentMetaDataMap[componentName].events;
-      this._completionMap[componentName] = { event: [], prop: [] };
+    // cname means component
+    Object.keys(this._componentMetaDataMap).forEach((tagName) => {
+      const componentName = this._componentMetaDataMap[tagName].componentName
+      const propsList = this._componentMetaDataMap[tagName].parseResult.props;
+      const eventList = this._componentMetaDataMap[tagName].parseResult.events;
+
+      this._completionMap[tagName] = { event: [], prop: [] };
       if (propsList) {
         const propsCompletion: CompletionItem[] = propsList.map((prop) => {
           const documentation = JSON.stringify(prop, null, 2);
@@ -62,7 +67,7 @@ export class TemplateCompletion implements CompletionItemProvider {
             ),
           };
         });
-        this._completionMap[componentName].prop = propsCompletion;
+        this._completionMap[tagName].prop = propsCompletion;
       }
       if (eventList) {
         const eventsCompletion: CompletionItem[] = eventList
@@ -80,7 +85,7 @@ export class TemplateCompletion implements CompletionItemProvider {
               ),
             };
           });
-        this._completionMap[componentName].event = eventsCompletion;
+        this._completionMap[tagName].event = eventsCompletion;
       }
     });
   }
