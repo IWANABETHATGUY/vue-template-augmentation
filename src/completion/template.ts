@@ -66,7 +66,7 @@ export class TemplateCompletion implements CompletionItemProvider {
     const curTree = parser.parse(document.getText());
     // use any due to SyntaxNode don't have typeId but run time have.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let curNode: any = curTree.rootNode.namedDescendantForPosition({
+    let curNode = curTree.rootNode.namedDescendantForPosition({
       column: position.character,
       row: position.line,
     });
@@ -80,7 +80,7 @@ export class TemplateCompletion implements CompletionItemProvider {
             (curNode.parent.typeId === 39 || curNode.parent.typeId === 43)))) ||
       // if in attribute and slot
       (curNode.type === 'quoted_attribute_value' &&
-        curNode.parent.type === 'attribute')
+        curNode.parent?.type === 'attribute')
     ) {
       if (curNode.type === 'directive_attribute') {
         directiveName = curNode.descendantsOfType('directive_name')[0].text;
@@ -90,7 +90,9 @@ export class TemplateCompletion implements CompletionItemProvider {
         curNode = curNode.parent;
         attributeName = curNode.descendantsOfType('attribute_name')[0]?.text
       }
-      curNode = curNode.parent;
+      if (curNode.parent) {
+        curNode = curNode.parent;
+      }
     }
     // assert here curNode type is start_tag
     if (curNode.type !== 'start_tag' && curNode.type !== 'self_closing_tag') {
