@@ -37,6 +37,8 @@ export class VueTemplateCompletion {
       if (event) {
         await this.recollectDeppendencies(event.document);
         this.resetComponentMedaData();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.tree = undefined as any;
       }
     });
   }
