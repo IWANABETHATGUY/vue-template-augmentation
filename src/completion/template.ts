@@ -33,7 +33,7 @@ enum MyCompletionPositionKind {
 
 const directiveAttributeRegExp = /[\w_@\-\:]+/;
 
-
+// HACK: 目前的tagName 转化以及对比做的不好，需要优化
 
 export class TemplateCompletion implements CompletionItemProvider {
   private _disposable: Disposable;
