@@ -1,5 +1,5 @@
 # vue-template-augmentation
-## 一个支持对SFC组件 标签提示 prop, slot, event，标签跳转的vscode 插件
+## 一个支持对SFC组件 标签 prop, slot, event 提示 ，标签跳转的vscode 插件
 - 提供对于组件标签的 props 和 event 提示补全, 点击 组件tag 跳转到定义
   ![props,event,tag-defination](https://vuethisstore.flatpeach.xyz/vue-template-completion-props.gif)
 - 支持对于组件的标签的slot 类型补全
