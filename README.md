@@ -4,27 +4,30 @@
 - 支持对于组件的标签的slot 类型补全
 - 支持vue3中 新的 `v-slot`语法 以及相应的 `directive` **#**
 ## 提示
-- 不能识别使用 webpack config alias 引入的 组件，你需要使用的`jsconfig.json`配置路径，这样 `vetur` 和 本插件都可以提供正常的提示。
-```
-// Webpack
-module.exports = {
-  resolve: {
-    alias: {
-      '@': 'src'
+- 为什么我的组件通过路径别名引入无法得到补全？  
+  本插件不能识别使用 webpack config alias 引入的 组件，你需要使用的`jsconfig.json`配置路径，这样 `vetur` 和 本插件都可以提供正常的提示。
+  ```
+  // Webpack
+  module.exports = {
+    resolve: {
+      alias: {
+        '@': 'src'
+      }
     }
   }
-}
-```
-```
-// tsconfig.json 或者 jsonconfig.json
-{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
+  ```
+  ```
+  // tsconfig.json 或者 jsonconfig.json
+  {
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+        "@/*": [
+          "src/*"
+        ]
+      }
     }
   }
-}
-```
+  ```
+- 为什么我的补全跳转非常慢？  
+  作者在测试中发现如果开着 `vetur` 同时打开大的工程时补全和跳转等功能是会受到影响，你可以尝试关闭 `vetur` 再测试，如果还是非常卡顿可以提issue
