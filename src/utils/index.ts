@@ -76,10 +76,14 @@ export function generateSFCMetaData(
   });
 }
 
+
 /**
  *
- * @param aliasMap 路径别名映射到相对目录的map
- * @param pathAlias 带有路径别名的路径
+ *
+ * @export
+ * @param {Record<string, string>} aliasMap 路径别名映射到相对目录的map
+ * @param {string} pathAlias 带有路径别名的路径
+ * @returns {string} 最终的相对路径
  */
 export function aliasToRelativePath(
   aliasMap: Record<string, string>,

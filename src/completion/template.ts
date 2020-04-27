@@ -236,7 +236,7 @@ export class TemplateCompletion implements CompletionItemProvider {
           const documentation = JSON.stringify(prop, null, 2);
           return {
             label: prop.name,
-            sortText: ` ${prop.name}`,
+            sortText: `00000${prop.name}`,
             kind: CompletionItemKind.Property,
             detail: `${componentName}:prop`,
             documentation: new MarkdownString('').appendCodeblock(
@@ -254,8 +254,8 @@ export class TemplateCompletion implements CompletionItemProvider {
             const documentation = JSON.stringify(event, null, 2);
             return {
               label: event.name,
-              sortText: ` ${event.name}`,
-              kind: CompletionItemKind.Method,
+              sortText: `00000${event.name}`,
+              kind: CompletionItemKind.Event,
               detail: `${componentName}:event`,
               documentation: new MarkdownString('').appendCodeblock(
                 documentation,
@@ -270,7 +270,7 @@ export class TemplateCompletion implements CompletionItemProvider {
           const documentation = JSON.stringify(slot, null, 2);
           return {
             label: slot.name,
-            sortText: ` ${slot.name}`,
+            sortText: `00000${slot.name}`,
             kind: CompletionItemKind.Operator,
             detail: `${componentName}:slot`,
             documentation: new MarkdownString('').appendCodeblock(
