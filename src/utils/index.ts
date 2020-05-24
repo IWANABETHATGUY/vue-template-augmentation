@@ -21,6 +21,7 @@ export function asyncFileExist(path: string): Promise<boolean> {
     }
   });
 }
+
 /**
  *
  * @param path 文件读取的绝对路径
