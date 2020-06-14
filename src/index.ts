@@ -16,7 +16,7 @@ import {
   aliasToRelativePath,
   generateSFCMetaData,
 } from './utils';
-import { TemplateTagDefinition } from './defination';
+import { TemplateTagDefinition } from './definition';
 import Parser, { Tree } from 'tree-sitter';
 import Vue from 'tree-sitter-vue';
 
@@ -27,7 +27,7 @@ export class VueTemplateCompletion {
   private _aliasMap: Record<string, string> = {};
   tree!: Tree;
   parser: Parser;
-  private _tagDefination!: TemplateTagDefinition;
+  private _tagDefinition!: TemplateTagDefinition;
   constructor(context: ExtensionContext) {
     this._context = context;
     this.parser = new Parser();
@@ -35,8 +35,8 @@ export class VueTemplateCompletion {
     this.init();
     window.onDidChangeActiveTextEditor(async (event) => {
       if (event) {
-        await this.recollectDeppendencies(event.document);
-        this.resetComponentMedaData();
+        await this.recollectDependencies(event.document);
+        this.resetComponentMetaData();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.tree = undefined as any;
       }
@@ -46,7 +46,7 @@ export class VueTemplateCompletion {
   private init(): void {
     this.initPathAliasMap();
     this.initCompletion();
-    this.initDefination();
+    this.initDefinition();
   }
 
   private async initPathAliasMap(): Promise<void> {
@@ -75,7 +75,7 @@ export class VueTemplateCompletion {
     }
   }
 
-  private resetComponentMedaData(): void {
+  private resetComponentMetaData(): void {
     this._completion.setComponentMetaDataMap(this._sfcMetaDataMap);
   }
 
@@ -92,17 +92,17 @@ export class VueTemplateCompletion {
     );
   }
 
-  private initDefination(): void {
-    this._tagDefination = new TemplateTagDefinition(this);
+  private initDefinition(): void {
+    this._tagDefinition = new TemplateTagDefinition(this);
     this._context.subscriptions.push(
       languages.registerDefinitionProvider(
         [{ language: 'vue', scheme: 'file' }],
-        this._tagDefination,
+        this._tagDefinition,
       )
     );
   }
   // 重新收集依赖的 引入的组件 元信息， 比如 props,event 等等
-  private async recollectDeppendencies(document: TextDocument): Promise<void> {
+  private async recollectDependencies(document: TextDocument): Promise<void> {
     this._sfcMetaDataMap = {};
     const importReg = /import\s+([\w]+)\s+from\s*(?:('(?:.*)'|"(?:.*)"))/g;
     // importMap , the key is component name, value is absolutePath
