@@ -50,6 +50,7 @@ export class VueTemplateCompletion {
   }
 
   private async initPathAliasMap(): Promise<void> {
+    debugger
     const folders = workspace.workspaceFolders;
     let workdir = '';
     if (folders) {
@@ -58,7 +59,7 @@ export class VueTemplateCompletion {
     if (!workdir) {
       return;
     }
-    const absoluteJsConfigJsonPath = path.resolve(workdir, 'jsconfig.json');
+    const absoluteJsConfigJsonPath = path.join(workdir, 'jsconfig.json');
     if (!(await asyncFileExist(absoluteJsConfigJsonPath))) {
       return;
     }
