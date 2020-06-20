@@ -7,7 +7,7 @@ import {
 } from 'vscode';
 import { TemplateCompletion } from './completion/template';
 import * as path from 'path';
-import { Nullable, SFCMetaData } from './types';
+import { Nullable, SFCMetaData, Dictionary } from './types';
 import {
   isRelativePath,
   asyncFileExist,
@@ -19,21 +19,28 @@ import {
 import { TemplateTagDefinition } from './definition';
 import Parser, { Tree } from 'tree-sitter';
 import Vue from 'tree-sitter-vue';
+import os from 'os';
+import glob from 'glob';
+import { promisify } from 'util';
+import { parse } from 'jsonc-parser';
+const globPromise = promisify(glob);
 
 export class VueTemplateCompletion {
   private _context: ExtensionContext;
   private _completion!: TemplateCompletion;
- _sfcMetaDataMap!: Record<string, SFCMetaData>;
+  _sfcMetaDataMap!: Record<string, SFCMetaData>;
   private _aliasMap: Record<string, string> = {};
   tree!: Tree;
   parser: Parser;
+  platform: string;
   private _tagDefinition!: TemplateTagDefinition;
   constructor(context: ExtensionContext) {
+    this.platform = os.platform();
     this._context = context;
     this.parser = new Parser();
     this.parser.setLanguage(Vue);
     this.init();
-    window.onDidChangeActiveTextEditor(async (event) => {
+    window.onDidChangeActiveTextEditor(async event => {
       if (event) {
         await this.recollectDependencies(event.document);
         this.resetComponentMetaData();
@@ -58,15 +65,46 @@ export class VueTemplateCompletion {
     if (!workdir) {
       return;
     }
-    const absoluteJsConfigJsonPath = path.resolve(workdir, 'jsconfig.json');
-    if (!(await asyncFileExist(absoluteJsConfigJsonPath))) {
+    if (this.platform === 'win32') {
+      workdir = workdir.slice(1);
+    }
+    let absoluteJsConfigJsonPathList: string[] = [];
+    let absoluteTsConfigJsonPathList: string[] = [];
+    try {
+      absoluteJsConfigJsonPathList = await globPromise(
+        `${workdir}/jsconfig.json`
+      );
+      absoluteTsConfigJsonPathList = await globPromise(
+        `${workdir}/tsconfig.json`
+      );
+    } catch (err) {
+      console.error(err);
+    }
+    absoluteJsConfigJsonPathList.forEach(async configPath => {
+      await this.generateAliasPathFromConfigJson(configPath, workdir);
+    });
+    absoluteTsConfigJsonPathList.forEach(async configPath => {
+      await this.generateAliasPathFromConfigJson(configPath, workdir);
+    });
+  }
+
+  private async generateAliasPathFromConfigJson(
+    absoluteConfigJsonPath: string,
+    workdir: string
+  ) {
+    if (!(await asyncFileExist(absoluteConfigJsonPath))) {
       return;
     }
-    const file = await asyncReadFile(absoluteJsConfigJsonPath);
-    const jsConfig = JSON.parse(file);
-    const baseUrl = jsConfig?.compilerOptions?.baseUrl ?? '.';
+    const file = await asyncReadFile(absoluteConfigJsonPath);
+    let config: Dictionary = {};
+    try {
+      config = parse(file);
+    } catch (err) {
+      console.error(err);
+    }
+    const baseUrl = config?.compilerOptions?.baseUrl ?? '.';
     const paths: Record<string, Array<string>> =
-      jsConfig?.compilerOptions?.paths ?? {};
+      config?.compilerOptions?.paths ?? {};
     for (const [k, v] of Object.entries(paths)) {
       const { alias, path: relativePath } = pathAliasMappingGenerator(k, v);
       if (alias) {
@@ -74,7 +112,7 @@ export class VueTemplateCompletion {
       }
     }
   }
-
+  
   private resetComponentMetaData(): void {
     this._completion.setComponentMetaDataMap(this._sfcMetaDataMap);
   }
@@ -97,7 +135,7 @@ export class VueTemplateCompletion {
     this._context.subscriptions.push(
       languages.registerDefinitionProvider(
         [{ language: 'vue', scheme: 'file' }],
-        this._tagDefinition,
+        this._tagDefinition
       )
     );
   }
@@ -150,7 +188,7 @@ export class VueTemplateCompletion {
         importMap[componentName] = absolutePath.slice(0, -4) + '/index.vue';
       }
     }
-    const promiseList = Object.keys(importMap).map(async (componentName) => {
+    const promiseList = Object.keys(importMap).map(async componentName => {
       try {
         const ParserResult = await generateSFCMetaData(
           importMap[componentName]
