@@ -19,21 +19,28 @@ import {
 import { TemplateTagDefinition } from './definition';
 import Parser, { Tree } from 'tree-sitter';
 import Vue from 'tree-sitter-vue';
+import os from 'os';
+import glob from 'glob';
+import { promisify } from 'util';
+
+const globPromise = promisify(glob);
 
 export class VueTemplateCompletion {
   private _context: ExtensionContext;
   private _completion!: TemplateCompletion;
- _sfcMetaDataMap!: Record<string, SFCMetaData>;
+  _sfcMetaDataMap!: Record<string, SFCMetaData>;
   private _aliasMap: Record<string, string> = {};
   tree!: Tree;
   parser: Parser;
+  platform: string;
   private _tagDefinition!: TemplateTagDefinition;
   constructor(context: ExtensionContext) {
+    this.platform = os.platform();
     this._context = context;
     this.parser = new Parser();
     this.parser.setLanguage(Vue);
     this.init();
-    window.onDidChangeActiveTextEditor(async (event) => {
+    window.onDidChangeActiveTextEditor(async event => {
       if (event) {
         await this.recollectDependencies(event.document);
         this.resetComponentMetaData();
@@ -50,7 +57,6 @@ export class VueTemplateCompletion {
   }
 
   private async initPathAliasMap(): Promise<void> {
-    debugger
     const folders = workspace.workspaceFolders;
     let workdir = '';
     if (folders) {
@@ -59,7 +65,19 @@ export class VueTemplateCompletion {
     if (!workdir) {
       return;
     }
-    const absoluteJsConfigJsonPath = path.join(workdir, 'jsconfig.json');
+    if (this.platform === 'win32') {
+      workdir = workdir.slice(1);
+    }
+    let absoluteJsConfigJsonPathList: string[] = [];
+    try {
+      absoluteJsConfigJsonPathList = await globPromise(
+        `${workdir}/jsconfig.json`
+      );
+    } catch (err) {
+      console.error(err);
+    }
+    let absoluteJsConfigJsonPath: string =
+      absoluteJsConfigJsonPathList?.[0] || '';
     if (!(await asyncFileExist(absoluteJsConfigJsonPath))) {
       return;
     }
@@ -98,7 +116,7 @@ export class VueTemplateCompletion {
     this._context.subscriptions.push(
       languages.registerDefinitionProvider(
         [{ language: 'vue', scheme: 'file' }],
-        this._tagDefinition,
+        this._tagDefinition
       )
     );
   }
@@ -151,7 +169,7 @@ export class VueTemplateCompletion {
         importMap[componentName] = absolutePath.slice(0, -4) + '/index.vue';
       }
     }
-    const promiseList = Object.keys(importMap).map(async (componentName) => {
+    const promiseList = Object.keys(importMap).map(async componentName => {
       try {
         const ParserResult = await generateSFCMetaData(
           importMap[componentName]
