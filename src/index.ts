@@ -39,10 +39,18 @@ export class VueTemplateCompletion {
     this._context = context;
     this.parser = new Parser();
     this.parser.setLanguage(Vue);
-    this.init();
+    this.init().then(() => {
+      if (window.activeTextEditor) {
+        this.recollectDependencies(window.activeTextEditor.document);
+      }
+    });
     window.onDidChangeActiveTextEditor(async event => {
       if (event) {
-        await this.recollectDependencies(event.document);
+        try {
+          await this.recollectDependencies(event.document);
+        } catch (err) {
+          console.error(err);
+        }
         this.resetComponentMetaData();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.tree = undefined as any;
@@ -50,8 +58,8 @@ export class VueTemplateCompletion {
     });
   }
 
-  private init(): void {
-    this.initPathAliasMap();
+  private async init(): Promise<void> {
+    await this.initPathAliasMap();
     this.initCompletion();
     this.initDefinition();
   }
@@ -77,15 +85,24 @@ export class VueTemplateCompletion {
       absoluteTsConfigJsonPathList = await globPromise(
         `${workdir}/tsconfig.json`
       );
+      await Promise.all(
+        absoluteJsConfigJsonPathList.map(async configPath => {
+          await this.generateAliasPathFromConfigJson(configPath, workdir);
+        })
+      );
+      await Promise.all(
+        absoluteTsConfigJsonPathList.map(async configPath => {
+          try {
+            await this.generateAliasPathFromConfigJson(configPath, workdir);
+            let a = 3;
+          } catch (err) {
+            console.warn(err);
+          }
+        })
+      );
     } catch (err) {
-      console.error(err);
+      console.log(err)
     }
-    absoluteJsConfigJsonPathList.forEach(async configPath => {
-      await this.generateAliasPathFromConfigJson(configPath, workdir);
-    });
-    absoluteTsConfigJsonPathList.forEach(async configPath => {
-      await this.generateAliasPathFromConfigJson(configPath, workdir);
-    });
   }
 
   private async generateAliasPathFromConfigJson(
@@ -112,7 +129,7 @@ export class VueTemplateCompletion {
       }
     }
   }
-  
+
   private resetComponentMetaData(): void {
     this._completion.setComponentMetaDataMap(this._sfcMetaDataMap);
   }
