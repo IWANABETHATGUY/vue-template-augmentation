@@ -4,7 +4,7 @@
   "description": "",
   "publisher": "IWANABETHATGUY",
   "license": "MIT",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.41.0"
   },
@@ -52,10 +52,15 @@
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
-    "@vuese/parser": "^2.5.1",
+    "@vuese/parser": "^2.9.0",
     "glob": "^7.1.6",
     "jsonc-parser": "^2.2.1",
     "tree-sitter": "^0.16.1",
-    "tree-sitter-vue": "^0.1.0"
+    "tree-sitter-vue": "^0.1.0",
+    "@babel/generator": "^7.10.3",
+    "@babel/parser": "^7.10.3",
+    "@babel/traverse": "^7.10.3",
+    "@babel/types": "^7.3.0",
+    "vue-template-compiler": "^2.6.11"
   }
 }
