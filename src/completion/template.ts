@@ -237,7 +237,7 @@ export class TemplateCompletion implements CompletionItemProvider {
           return {
             label: prop.name,
             sortText: `00000${prop.name}`,
-            kind: CompletionItemKind.Property,
+            kind: CompletionItemKind.Reference,
             detail: `${componentName}:prop`,
             documentation: new MarkdownString('').appendCodeblock(
               documentation,
