@@ -94,7 +94,6 @@ export class VueTemplateCompletion {
         absoluteTsConfigJsonPathList.map(async configPath => {
           try {
             await this.generateAliasPathFromConfigJson(configPath, workdir);
-            let a = 3;
           } catch (err) {
             console.warn(err);
           }
