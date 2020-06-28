@@ -3,6 +3,9 @@ const path = require('path');
 
 /** @type{import('webpack').Configuration} */
 const config = {
+  node: {
+    __dirname: false
+  },
   target: 'node', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
   entry: './src/extension.ts',
   output: {
