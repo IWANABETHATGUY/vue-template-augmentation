@@ -18,7 +18,7 @@
   "activationEvents": [
     "onLanguage:vue"
   ],
-  "main": "./out/extension",
+  "main": "./dist/extension",
   "contributes": {
     "commands": []
   },
