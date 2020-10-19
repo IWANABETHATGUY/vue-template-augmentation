@@ -17,8 +17,7 @@ import {
   generateSFCMetaData,
 } from './utils';
 import { TemplateTagDefinition } from './definition';
-import Parser, { Tree } from 'tree-sitter';
-import Vue from 'tree-sitter-vue';
+import Parser, { Tree } from 'web-tree-sitter';
 import os from 'os';
 import glob from 'glob';
 import { promisify } from 'util';
@@ -31,14 +30,13 @@ export class VueTemplateCompletion {
   _sfcMetaDataMap!: Record<string, SFCMetaData>;
   private _aliasMap: Record<string, string> = {};
   tree!: Tree;
-  parser: Parser;
+  parser!: Parser;
   platform: string;
   private _tagDefinition!: TemplateTagDefinition;
   constructor(context: ExtensionContext) {
     this.platform = os.platform();
     this._context = context;
-    this.parser = new Parser();
-    this.parser.setLanguage(Vue);
+
     this.init().then(() => {
       if (window.activeTextEditor) {
         this.recollectDependencies(window.activeTextEditor.document);
@@ -59,11 +57,19 @@ export class VueTemplateCompletion {
   }
 
   private async init(): Promise<void> {
+    await this.initParser();
     await this.initPathAliasMap();
     this.initCompletion();
     this.initDefinition();
   }
-
+  private async initParser(): Promise<void> {
+    await Parser.init();
+    const parser = new Parser();
+    const Lang = await Parser.Language.load(
+      path.resolve(__dirname, '../assets/tree-sitter-vue.wasm')
+    );
+    parser.setLanguage(Lang);
+  }
   private async initPathAliasMap(): Promise<void> {
     const folders = workspace.workspaceFolders;
     let workdir = '';
@@ -100,14 +106,14 @@ export class VueTemplateCompletion {
         })
       );
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
   }
 
   private async generateAliasPathFromConfigJson(
     absoluteConfigJsonPath: string,
     workdir: string
-  ) {
+  ): Promise<void> {
     if (!(await asyncFileExist(absoluteConfigJsonPath))) {
       return;
     }

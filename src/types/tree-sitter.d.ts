@@ -1,5 +1,5 @@
-import { SyntaxNode } from 'tree-sitter'
-declare module 'tree-sitter' {
+import { SyntaxNode } from 'web-tree-sitter'
+declare module 'web-tree-sitter' {
     interface SyntaxNode {
         typeId: number;
     }
