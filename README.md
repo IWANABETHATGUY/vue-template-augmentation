@@ -46,7 +46,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/IWANABETHATGUY"><img src="https://avatars1.githubusercontent.com/u/17974631?v=4" width="100px;" alt=""/><br /><sub><b>IWANABETHATGUY</b></sub></a><br /><a href="#infra-IWANABETHATGUY" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/IWANABETHATGUY/vue-template-augmentation/commits?author=IWANABETHATGUY" title="Tests">⚠️</a> <a href="https://github.com/IWANABETHATGUY/vue-template-augmentation/commits?author=IWANABETHATGUY" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/IWANABETHATGUY"><img src="https://avatars1.githubusercontent.com/u/17974631?v=4" width="100px;" alt=""/><br /><sub><b>IWANABETHATGUY</b></sub></a><br /><a href="#infra-IWANABETHATGUY" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/IWANABETHATGUY/vue-template-augmentation/commits?author=IWANABETHATGUY" title="Tests">⚠️</a> <a href="https://github.com/IWANABETHATGUY/vue-template-augmentation/commits?author=IWANABETHATGUY" title="Code">💻</a> <a href="https://github.com/IWANABETHATGUY/vue-template-augmentation/commits?author=IWANABETHATGUY" title="Documentation">📖</a></td>
   </tr>
 </table>
 
