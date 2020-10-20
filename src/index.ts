@@ -66,9 +66,10 @@ export class VueTemplateCompletion {
     await Parser.init();
     const parser = new Parser();
     const Lang = await Parser.Language.load(
-      path.resolve(__dirname, '../assets/tree-sitter-vue.wasm')
+      path.resolve(__dirname, '../parser/tree-sitter-vue.wasm')
     );
     parser.setLanguage(Lang);
+    this.parser = parser;
   }
   private async initPathAliasMap(): Promise<void> {
     const folders = workspace.workspaceFolders;
