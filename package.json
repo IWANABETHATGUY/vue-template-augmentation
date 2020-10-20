@@ -4,7 +4,7 @@
   "description": "",
   "publisher": "IWANABETHATGUY",
   "license": "MIT",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "engines": {
     "vscode": "^1.41.0"
   },
@@ -18,7 +18,7 @@
   "activationEvents": [
     "onLanguage:vue"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": []
   },
@@ -30,7 +30,8 @@
     "webpack": "webpack --mode development",
     "webpack-dev": "webpack --mode development --watch",
     "test-compile": "tsc -p ./",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "postbuild":"node ./scripts/mvWebTreeSitter.js"
   },
   "devDependencies": {
     "@types/babel__traverse": "^7.0.9",
