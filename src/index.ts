@@ -49,7 +49,7 @@ export class VueTemplateCompletion {
         } catch (err) {
           console.error(err);
         }
-        this.resetComponentMetaData();
+        this.updateComponentMetaData();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.tree = undefined as any;
       }
@@ -136,7 +136,7 @@ export class VueTemplateCompletion {
     }
   }
 
-  private resetComponentMetaData(): void {
+  private updateComponentMetaData(): void {
     this._completion.setComponentMetaDataMap(this._sfcMetaDataMap);
   }
 

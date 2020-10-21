@@ -12,11 +12,11 @@ import {
 import { VueTemplateCompletion } from '..';
 
 export class TemplateTagDefinition implements DefinitionProvider {
-  private _context: VueTemplateCompletion;
+  private _augmentationContext: VueTemplateCompletion;
   private _disposable: Disposable;
   constructor(context: VueTemplateCompletion) {
     const subscriptions: Disposable[] = [];
-    this._context = context;
+    this._augmentationContext = context;
     this._disposable = Disposable.from(...subscriptions);
   }
   dispose(): void {
@@ -33,10 +33,10 @@ export class TemplateTagDefinition implements DefinitionProvider {
     let matchTagName = '';
     // use any due to SyntaxNode don't have typeId but run time have.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (!this._context.tree || document.isDirty) {
-      this._context.tree = this._context.parser.parse(document.getText());
+    if (!this._augmentationContext.tree || document.isDirty) {
+      this._augmentationContext.tree = this._augmentationContext.parser.parse(document.getText());
     }
-    const curNode = this._context.tree.rootNode.namedDescendantForPosition({
+    const curNode = this._augmentationContext.tree.rootNode.namedDescendantForPosition({
       column: position.character,
       row: position.line,
     });
@@ -50,7 +50,7 @@ export class TemplateTagDefinition implements DefinitionProvider {
       return [];
     }
     matchTagName = matchTagName.replace(/[-_]/g, '').toUpperCase();
-    const absolutePath = this._context._sfcMetaDataMap[matchTagName]?.absolutePath
+    const absolutePath = this._augmentationContext._sfcMetaDataMap[matchTagName]?.absolutePath
     if (!absolutePath) {
       return null;
     }

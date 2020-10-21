@@ -39,11 +39,11 @@ export class TemplateCompletion implements CompletionItemProvider {
   private _disposable: Disposable;
   private _componentMetaDataMap: Record<string, SFCMetaData> = {};
   private _completionMap: ComponentCompletionMap = {};
-  private _context: VueTemplateCompletion;
+  private _augmentationContext: VueTemplateCompletion;
   constructor(context: VueTemplateCompletion) {
     const subscriptions: Disposable[] = [];
     this._disposable = Disposable.from(...subscriptions);
-    this._context = context;
+    this._augmentationContext = context;
   }
 
   dispose(): void {
@@ -63,8 +63,8 @@ export class TemplateCompletion implements CompletionItemProvider {
     let matchTagName = '';
     let directiveName = '';
     let attributeName = '';
-    const curTree = this._context.parser.parse(document.getText());
-    this._context.tree = curTree;
+    const curTree = this._augmentationContext.parser.parse(document.getText());
+    this._augmentationContext.tree = curTree;
     // use any due to SyntaxNode don't have typeId but run time have.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let curNode = curTree.rootNode.namedDescendantForPosition({
