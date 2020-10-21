@@ -63,10 +63,15 @@ export class TemplateCompletion implements CompletionItemProvider {
     let matchTagName = '';
     let directiveName = '';
     let attributeName = '';
-    const curTree = this._augmentationContext.parser.parse(document.getText());
-    this._augmentationContext.tree = curTree;
+    // console.time('completion parse');
+    // const curTree = this._augmentationContext.parser.parse(document.getText());
+    // console.timeEnd('completion parse');
+
+    console.time('completion process');
+    // this._augmentationContext.tree = curTree;
     // use any due to SyntaxNode don't have typeId but run time have.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const curTree = this._augmentationContext.tree;
     let curNode = curTree.rootNode.namedDescendantForPosition({
       column: position.character,
       row: position.line,
@@ -114,7 +119,7 @@ export class TemplateCompletion implements CompletionItemProvider {
     if (context.triggerCharacter) {
       if (context.triggerCharacter === '@') {
         completionList.push(
-          ...this.getSFCData(matchTagName, 'event').map((item) => ({
+          ...this.getSFCData(matchTagName, 'event').map(item => ({
             ...item,
             insertText: new SnippetString(`${item.label}="$1"$2`),
           }))
@@ -131,7 +136,7 @@ export class TemplateCompletion implements CompletionItemProvider {
           const word = document.getText(range);
           if (word.startsWith(':')) {
             completionList.push(
-              ...this.getSFCData(matchTagName, 'prop').map((item) => ({
+              ...this.getSFCData(matchTagName, 'prop').map(item => ({
                 ...item,
                 insertText: new SnippetString(`${item.label}="$1"$2`),
               }))
@@ -176,6 +181,7 @@ export class TemplateCompletion implements CompletionItemProvider {
       // } else if (positionKind === CompletionPositionKind.Attribute) {
       // }
     }
+    console.timeEnd('completion process');
     return completionList;
   }
 
@@ -225,14 +231,14 @@ export class TemplateCompletion implements CompletionItemProvider {
    */
   private generationCompletion(): void {
     // cname means component
-    Object.keys(this._componentMetaDataMap).forEach((tagName) => {
+    Object.keys(this._componentMetaDataMap).forEach(tagName => {
       const componentName = this._componentMetaDataMap[tagName].componentName;
       const propsList = this._componentMetaDataMap[tagName].parseResult.props;
       const eventList = this._componentMetaDataMap[tagName].parseResult.events;
       const slotList = this._componentMetaDataMap[tagName].parseResult.slots;
       this._completionMap[tagName] = { event: [], prop: [], slot: [] };
       if (propsList) {
-        const propsCompletion: CompletionItem[] = propsList.map((prop) => {
+        const propsCompletion: CompletionItem[] = propsList.map(prop => {
           const documentation = JSON.stringify(prop, null, 2);
           return {
             label: prop.name,
@@ -249,8 +255,8 @@ export class TemplateCompletion implements CompletionItemProvider {
       }
       if (eventList) {
         const eventsCompletion: CompletionItem[] = eventList
-          .filter((event) => !event.isSync)
-          .map((event) => {
+          .filter(event => !event.isSync)
+          .map(event => {
             const documentation = JSON.stringify(event, null, 2);
             return {
               label: event.name,
@@ -266,7 +272,7 @@ export class TemplateCompletion implements CompletionItemProvider {
         this._completionMap[tagName].event = eventsCompletion;
       }
       if (slotList) {
-        const eventsCompletion: CompletionItem[] = slotList.map((slot) => {
+        const eventsCompletion: CompletionItem[] = slotList.map(slot => {
           const documentation = JSON.stringify(slot, null, 2);
           return {
             label: slot.name,

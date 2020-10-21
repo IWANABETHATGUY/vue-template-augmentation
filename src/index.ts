@@ -4,6 +4,7 @@ import {
   window,
   TextDocument,
   workspace,
+  Position,
 } from 'vscode';
 import { TemplateCompletion } from './completion/template';
 import * as path from 'path';
@@ -44,6 +45,9 @@ export class VueTemplateCompletion {
     });
     window.onDidChangeActiveTextEditor(async event => {
       if (event) {
+        if (event.document.languageId !== 'vue') {
+          return;
+        }
         try {
           await this.recollectDependencies(event.document);
         } catch (err) {
@@ -51,11 +55,41 @@ export class VueTemplateCompletion {
         }
         this.updateComponentMetaData();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.tree = undefined as any;
+        this.tree = this.parser.parse(event.document.getText());
       }
     });
+    workspace.onDidChangeTextDocument(event => {
+      if (event.document.languageId !== 'vue') {
+        return;
+      }
+      console.time('increasing parse');
+      for (const change of event.contentChanges) {
+        const startIndex = change.rangeOffset;
+        const oldEndIndex = change.rangeOffset + change.rangeLength;
+        const newEndIndex = change.rangeOffset + change.text.length;
+        const startPos = event.document.positionAt(startIndex);
+        const oldEndPos = event.document.positionAt(oldEndIndex);
+        const newEndPos = event.document.positionAt(newEndIndex);
+        const startPosition = this.asPoint(startPos);
+        const oldEndPosition = this.asPoint(oldEndPos);
+        const newEndPosition = this.asPoint(newEndPos);
+        const delta = {
+          startIndex,
+          oldEndIndex,
+          newEndIndex,
+          startPosition,
+          oldEndPosition,
+          newEndPosition,
+        };
+        this.tree.edit(delta);
+      }
+      this.tree = this.parser.parse(event.document.getText(), this.tree);
+      console.timeEnd('increasing parse');
+    });
   }
-
+  private asPoint(pos: Position): Parser.Point {
+    return { row: pos.line, column: pos.character };
+  }
   private async init(): Promise<void> {
     await this.initParser();
     await this.initPathAliasMap();
