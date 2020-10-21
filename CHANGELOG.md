@@ -5,3 +5,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 - Initial release
+- 0.9.0
+  - use incremental parse instead of full parse, make intellisense much fast
+  - cache every tree-sitter parse tree, don't reparse when you change your active text editor. 

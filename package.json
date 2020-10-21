@@ -4,7 +4,7 @@
   "description": "",
   "publisher": "IWANABETHATGUY",
   "license": "MIT",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "engines": {
     "vscode": "^1.41.0"
   },
@@ -18,7 +18,7 @@
   "activationEvents": [
     "onLanguage:vue"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": []
   },
