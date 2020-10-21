@@ -71,7 +71,10 @@ export class TemplateCompletion implements CompletionItemProvider {
     // this._augmentationContext.tree = curTree;
     // use any due to SyntaxNode don't have typeId but run time have.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const curTree = this._augmentationContext.tree;
+    const curTree = this._augmentationContext.treeSitterMap[document.uri.toString()];
+    if (!curTree) {
+      return [];
+    }
     let curNode = curTree.rootNode.namedDescendantForPosition({
       column: position.character,
       row: position.line,

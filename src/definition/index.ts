@@ -39,7 +39,11 @@ export class TemplateTagDefinition implements DefinitionProvider {
     //   console.timeEnd("definition parsing")
     // }
     console.time('definition process');
-    const curNode = this._augmentationContext.tree.rootNode.namedDescendantForPosition(
+    const curTree = this._augmentationContext.treeSitterMap[document.uri.toString()];
+    if (!curTree) {
+      return [];
+    }
+    const curNode = curTree.rootNode.namedDescendantForPosition(
       {
         column: position.character,
         row: position.line,

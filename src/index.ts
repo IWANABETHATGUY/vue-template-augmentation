@@ -30,7 +30,8 @@ export class VueTemplateCompletion {
   private _completion!: TemplateCompletion;
   _sfcMetaDataMap!: Record<string, SFCMetaData>;
   private _aliasMap: Record<string, string> = {};
-  tree!: Tree;
+
+  treeSitterMap: Record<string, Tree> = {};
   parser!: Parser;
   platform: string;
   private _tagDefinition!: TemplateTagDefinition;
@@ -55,7 +56,12 @@ export class VueTemplateCompletion {
         }
         this.updateComponentMetaData();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.tree = this.parser.parse(event.document.getText());
+        const uri = event.document.uri.toString();
+        console.time("init Parsing")
+        if (!this.treeSitterMap[uri]) {
+          this.treeSitterMap[uri] = this.parser.parse(event.document.getText());
+        }
+        console.timeEnd("init Parsing")
       }
     });
     workspace.onDidChangeTextDocument(event => {
@@ -63,6 +69,8 @@ export class VueTemplateCompletion {
         return;
       }
       console.time('increasing parse');
+      const uri = event.document.uri.toString();
+      const currentTree = this.treeSitterMap[uri];
       for (const change of event.contentChanges) {
         const startIndex = change.rangeOffset;
         const oldEndIndex = change.rangeOffset + change.rangeLength;
@@ -81,12 +89,21 @@ export class VueTemplateCompletion {
           oldEndPosition,
           newEndPosition,
         };
-        this.tree.edit(delta);
+        currentTree.edit(delta);
       }
-      this.tree = this.parser.parse(event.document.getText(), this.tree);
+      this.treeSitterMap[uri] = this.parser.parse(event.document.getText(), currentTree);
       console.timeEnd('increasing parse');
     });
   }
+
+  /**
+   * transform Vscode.Point into a Treesitter Point
+   *
+   * @private
+   * @param {Position} pos
+   * @returns {Parser.Point}
+   * @memberof VueTemplateCompletion
+   */
   private asPoint(pos: Position): Parser.Point {
     return { row: pos.line, column: pos.character };
   }
