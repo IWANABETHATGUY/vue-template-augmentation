@@ -38,7 +38,7 @@ export class TemplateTagDefinition implements DefinitionProvider {
     //   this._augmentationContext.tree = this._augmentationContext.parser.parse(document.getText());
     //   console.timeEnd("definition parsing")
     // }
-    console.time('definition process');
+    // console.time('definition process');
     const curTree = this._augmentationContext.treeSitterMap[document.uri.toString()];
     if (!curTree) {
       return [];
@@ -52,22 +52,22 @@ export class TemplateTagDefinition implements DefinitionProvider {
     // [39, 43].includes(curNode.parent.typeId)
     // assert here curNode type is start_tag
     if (curNode.type !== 'tag_name') {
-      console.timeEnd('definition process');
+      // console.timeEnd('definition process');
       return null;
     }
     matchTagName = curNode.text;
     if (!matchTagName) {
-      console.timeEnd('definition process');
+      // console.timeEnd('definition process');
       return [];
     }
     matchTagName = matchTagName.replace(/[-_]/g, '').toUpperCase();
     const absolutePath = this._augmentationContext._sfcMetaDataMap[matchTagName]
       ?.absolutePath;
     if (!absolutePath) {
-      console.timeEnd('definition process');
+      // console.timeEnd('definition process');
       return null;
     }
-    console.timeEnd('definition process');
+    // console.timeEnd('definition process');
     return new Location(Uri.file(absolutePath), new Position(0, 0));
   }
 }

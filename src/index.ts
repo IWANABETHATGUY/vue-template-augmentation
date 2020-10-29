@@ -57,42 +57,47 @@ export class VueTemplateCompletion {
         this.updateComponentMetaData();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const uri = event.document.uri.toString();
-        console.time("init Parsing")
+        // console.time('init Parsing');
         if (!this.treeSitterMap[uri]) {
           this.treeSitterMap[uri] = this.parser.parse(event.document.getText());
         }
-        console.timeEnd("init Parsing")
+        // console.timeEnd('init Parsing');
       }
     });
     workspace.onDidChangeTextDocument(event => {
       if (event.document.languageId !== 'vue') {
         return;
       }
-      console.time('increasing parse');
+      // console.time('increasing parse');
       const uri = event.document.uri.toString();
       const currentTree = this.treeSitterMap[uri];
-      for (const change of event.contentChanges) {
-        const startIndex = change.rangeOffset;
-        const oldEndIndex = change.rangeOffset + change.rangeLength;
-        const newEndIndex = change.rangeOffset + change.text.length;
-        const startPos = event.document.positionAt(startIndex);
-        const oldEndPos = event.document.positionAt(oldEndIndex);
-        const newEndPos = event.document.positionAt(newEndIndex);
-        const startPosition = this.asPoint(startPos);
-        const oldEndPosition = this.asPoint(oldEndPos);
-        const newEndPosition = this.asPoint(newEndPos);
-        const delta = {
-          startIndex,
-          oldEndIndex,
-          newEndIndex,
-          startPosition,
-          oldEndPosition,
-          newEndPosition,
-        };
-        currentTree.edit(delta);
+      if (currentTree) {
+        for (const change of event.contentChanges) {
+          const startIndex = change.rangeOffset;
+          const oldEndIndex = change.rangeOffset + change.rangeLength;
+          const newEndIndex = change.rangeOffset + change.text.length;
+          const startPos = event.document.positionAt(startIndex);
+          const oldEndPos = event.document.positionAt(oldEndIndex);
+          const newEndPos = event.document.positionAt(newEndIndex);
+          const startPosition = this.asPoint(startPos);
+          const oldEndPosition = this.asPoint(oldEndPos);
+          const newEndPosition = this.asPoint(newEndPos);
+          const delta = {
+            startIndex,
+            oldEndIndex,
+            newEndIndex,
+            startPosition,
+            oldEndPosition,
+            newEndPosition,
+          };
+          currentTree.edit(delta);
+        }
       }
-      this.treeSitterMap[uri] = this.parser.parse(event.document.getText(), currentTree);
-      console.timeEnd('increasing parse');
+      this.treeSitterMap[uri] = this.parser.parse(
+        event.document.getText(),
+        currentTree
+      );
+      // console.timeEnd('increasing parse');
     });
   }
 

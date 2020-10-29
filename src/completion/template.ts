@@ -67,7 +67,7 @@ export class TemplateCompletion implements CompletionItemProvider {
     // const curTree = this._augmentationContext.parser.parse(document.getText());
     // console.timeEnd('completion parse');
 
-    console.time('completion process');
+    // console.time('completion process');
     // this._augmentationContext.tree = curTree;
     // use any due to SyntaxNode don't have typeId but run time have.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -184,7 +184,7 @@ export class TemplateCompletion implements CompletionItemProvider {
       // } else if (positionKind === CompletionPositionKind.Attribute) {
       // }
     }
-    console.timeEnd('completion process');
+    // console.timeEnd('completion process');
     return completionList;
   }
 
