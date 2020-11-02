@@ -58,6 +58,10 @@ export class VueTemplateCompletion {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const uri = event.document.uri.toString();
         // console.time('init Parsing');
+        const objectKeys = Object.keys(this.treeSitterMap)
+        if (objectKeys.length > 5) {
+          delete this.treeSitterMap[objectKeys[0]]
+        }
         if (!this.treeSitterMap[uri]) {
           this.treeSitterMap[uri] = this.parser.parse(event.document.getText());
         }
