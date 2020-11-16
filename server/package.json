@@ -1,0 +1,29 @@
+{
+	"name": "vue-template-augmentation",
+	"description": "Example implementation of a language server in node.",
+	"version": "1.0.0",
+	"author": "Microsoft Corporation",
+	"license": "MIT",
+	"engines": {
+		"node": "*"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/vscode-extension-samples"
+	},
+	"dependencies": {
+		"vscode-languageserver": "^6.1.1",
+		"vscode-languageserver-textdocument": "^1.0.1",
+		"@babel/generator": "^7.10.3",
+		"@babel/parser": "^7.10.3",
+		"@babel/traverse": "^7.10.3",
+		"@babel/types": "^7.3.0",
+		"@vuese/parser": "^2.10.0",
+		"glob": "^7.1.6",
+		"jsonc-parser": "^2.2.1",
+		"vue-template-compiler": "^2.6.11",
+		"wasm-loader": "^1.3.0",
+		"web-tree-sitter": "^0.17.1"
+	},
+	"scripts": {}
+}

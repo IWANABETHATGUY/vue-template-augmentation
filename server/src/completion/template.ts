@@ -12,7 +12,7 @@ import {
   SnippetString,
 } from 'vscode';
 
-import { SFCMetaData } from '../types';
+import { SFCMetaData } from '../../types';
 import { VueTemplateCompletion } from '..';
 
 type CompletionMap = {

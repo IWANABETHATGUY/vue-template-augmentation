@@ -5,6 +5,7 @@ import {
   TextDocument,
   workspace,
   Position,
+  TextDocumentChangeEvent,
 } from 'vscode';
 import { TemplateCompletion } from './completion/template';
 import * as path from 'path';
@@ -58,9 +59,9 @@ export class VueTemplateCompletion {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const uri = event.document.uri.toString();
         // console.time('init Parsing');
-        const objectKeys = Object.keys(this.treeSitterMap)
+        const objectKeys = Object.keys(this.treeSitterMap);
         if (objectKeys.length > 5) {
-          delete this.treeSitterMap[objectKeys[0]]
+          delete this.treeSitterMap[objectKeys[0]];
         }
         if (!this.treeSitterMap[uri]) {
           this.treeSitterMap[uri] = this.parser.parse(event.document.getText());
@@ -69,42 +70,43 @@ export class VueTemplateCompletion {
       }
     });
     workspace.onDidChangeTextDocument(event => {
-      if (event.document.languageId !== 'vue') {
-        return;
-      }
-      // console.time('increasing parse');
-      const uri = event.document.uri.toString();
-      const currentTree = this.treeSitterMap[uri];
-      if (currentTree) {
-        for (const change of event.contentChanges) {
-          const startIndex = change.rangeOffset;
-          const oldEndIndex = change.rangeOffset + change.rangeLength;
-          const newEndIndex = change.rangeOffset + change.text.length;
-          const startPos = event.document.positionAt(startIndex);
-          const oldEndPos = event.document.positionAt(oldEndIndex);
-          const newEndPos = event.document.positionAt(newEndIndex);
-          const startPosition = this.asPoint(startPos);
-          const oldEndPosition = this.asPoint(oldEndPos);
-          const newEndPosition = this.asPoint(newEndPos);
-          const delta = {
-            startIndex,
-            oldEndIndex,
-            newEndIndex,
-            startPosition,
-            oldEndPosition,
-            newEndPosition,
-          };
-          currentTree.edit(delta);
-        }
-      }
-      this.treeSitterMap[uri] = this.parser.parse(
-        event.document.getText(),
-        currentTree
-      );
       // console.timeEnd('increasing parse');
     });
   }
-
+  onDidChangeTextDocument(event: TextDocumentChangeEvent) {
+    if (event.document.languageId !== 'vue') {
+      return;
+    }
+    // console.time('increasing parse');
+    const uri = event.document.uri.toString();
+    const currentTree = this.treeSitterMap[uri];
+    if (currentTree) {
+      for (const change of event.contentChanges) {
+        const startIndex = change.rangeOffset;
+        const oldEndIndex = change.rangeOffset + change.rangeLength;
+        const newEndIndex = change.rangeOffset + change.text.length;
+        const startPos = event.document.positionAt(startIndex);
+        const oldEndPos = event.document.positionAt(oldEndIndex);
+        const newEndPos = event.document.positionAt(newEndIndex);
+        const startPosition = this.asPoint(startPos);
+        const oldEndPosition = this.asPoint(oldEndPos);
+        const newEndPosition = this.asPoint(newEndPos);
+        const delta = {
+          startIndex,
+          oldEndIndex,
+          newEndIndex,
+          startPosition,
+          oldEndPosition,
+          newEndPosition,
+        };
+        currentTree.edit(delta);
+      }
+    }
+    this.treeSitterMap[uri] = this.parser.parse(
+      event.document.getText(),
+      currentTree
+    );
+  }
   /**
    * transform Vscode.Point into a Treesitter Point
    *
@@ -116,6 +118,7 @@ export class VueTemplateCompletion {
   private asPoint(pos: Position): Parser.Point {
     return { row: pos.line, column: pos.character };
   }
+
   private async init(): Promise<void> {
     await this.initParser();
     await this.initPathAliasMap();

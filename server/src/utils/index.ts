@@ -1,6 +1,9 @@
 import * as fs from 'fs';
 import { ParserResult, parser } from '@vuese/parser';
 import * as path from 'path';
+import { TextDocument, TextDocumentContentChangeEvent } from "vscode-languageserver-textdocument";
+import Parser, { Edit } from "web-tree-sitter";
+import { Position, Range } from "vscode-languageserver";
 export function isRelativePath(path: string): boolean {
   return path.startsWith('./') || path.startsWith('../');
 }
@@ -96,3 +99,27 @@ export function aliasToRelativePath(
   }
   return path.resolve(aliasMap[alias], ...restPath);
 }
+
+
+
+
+export function getTreeSitterEditFromChange(change: TextDocumentContentChangeEvent, document: TextDocument): Edit {
+  const range: Range = (change as any).range;
+  const text = change.text;
+  const rangeLength: number = (change as any).rangeLength;
+  const startIndex = document.offsetAt(range.start);
+  const oldEndIndex = document.offsetAt(range.end);
+  const newEndIndex = document.offsetAt(range.end) - rangeLength + text.length;
+  const newEndPosition = document.positionAt(newEndIndex);
+  const oldEndPosition = document.positionAt(oldEndIndex);
+  const startPosition = document.positionAt(startIndex);
+  return {
+    startIndex,
+    newEndIndex,
+    oldEndIndex,
+    newEndPosition: { column: newEndPosition.character, row: newEndPosition.line },
+    oldEndPosition: { column: oldEndPosition.character, row: oldEndPosition.line },
+    startPosition: { column: startPosition.character, row: startPosition.line },
+  };
+}
+
