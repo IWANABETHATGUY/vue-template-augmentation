@@ -27,20 +27,19 @@ import {
   getTreeSitterEditFromChange,
 } from "./utils";
 import { connect } from "tls";
+import { VueTemplateCompletion } from ".";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 const connection = createConnection(ProposedFeatures.all);
 
 // init treeParser
-const parser = new Parser();
-parser.setLanguage(cmLang);
+// const parser = new Parser();
 
-const documentManager: Record<string, TextDocument> = {};
-const parseTreeManager: Record<string, Parser.Tree> = {};
+
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
-
+const vueTemplateAugmentation = new VueTemplateCompletion();
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
@@ -90,11 +89,12 @@ connection.onInitialized(() => {
     });
   }
   connection.onDidOpenTextDocument(params => {
-    const { uri, version, languageId, text } = params.textDocument;
-    documentManager[uri] = TextDocument.create(uri, languageId, version, text);
-    console.time("open parse text");
-    parseTreeManager[uri] = parser.parse(text);
-    console.timeEnd("open parse text");
+    vueTemplateAugmentation.onDidOpenTextDocument(params);
+    // const { uri, version, languageId, text } = params.textDocument;
+    // documentManager[uri] = TextDocument.create(uri, languageId, version, text);
+    // console.time("open parse text");
+    // parseTreeManager[uri] = parser.parse(text);
+    // console.timeEnd("open parse text");
     // A text document was opened in VS Code.
     // params.uri uniquely identifies the document. For documents stored on disk, this is a file URI.
     // params.text the initial full content of the document.
@@ -114,53 +114,29 @@ connection.onInitialized(() => {
   // TODO: 现在只考虑 只有一个文件的情况因此只用考虑 保存一个 parseTree, 如果有多个文件的话， 需要考虑多个ParseTree,
   // 类似于documentManager
   connection.onDidChangeTextDocument(params => {
-    const documentUri = params.textDocument.uri;
-    let document = documentManager[documentUri];
-    if (document && params.textDocument.version !== null) {
-      let parseTree = parseTreeManager[documentUri];
-      const version = params.textDocument.version;
-      // edit the parseTree
-      console.time("parseTree");
-      if (parseTree) {
-        // XXX: 重要, 这里每次更新都需要重新parse
-        params.contentChanges.forEach(change => {
-          parseTree.edit(getTreeSitterEditFromChange(change, document));
-          document = TextDocument.update(document, [change], version);
-          parseTree = parser.parse(document.getText(), parseTree);
-        });
-        parseTreeManager[documentUri] = parseTree;
-      } else {
-        document = TextDocument.update(document, params.contentChanges, params.textDocument.version);
-      }
-      documentManager[documentUri] = document;
-      // edit the parseTree end
-      console.timeEnd("parseTree");
-    }
-    // The content of a text document has change in VS Code.
-    // params.uri uniquely identifies the document.
-    // params.contentChanges describe the content changes to the document.
+		vueTemplateAugmentation.onDidChangeTextDocument(params);
   });
 
   connection.onDidCloseTextDocument(params => {
-    delete parseTreeManager[params.textDocument.uri];
-    delete documentManager[params.textDocument.uri];
+    // delete parseTreeManager[params.textDocument.uri];
+    // delete documentManager[params.textDocument.uri];
   });
 });
 
-connection.onDefinition(
-  (params): UndefineAble<Location> => {
-    const parseTree = parseTreeManager[params.textDocument.uri];
-    const scopeMap = symbolTableManager[params.textDocument.uri];
-    const definition = getDefinitionSymbolFromVscodePosition(parseTree, scopeMap, params.position);
-    if (!definition) {
-      return;
-    }
-    return {
-      uri: params.textDocument.uri,
-      range: getRangeFromSyntaxNode(definition.syntaxNode),
-    };
-  }
-);
+// connection.onDefinition(
+//   (params): UndefineAble<Location> => {
+//     const parseTree = parseTreeManager[params.textDocument.uri];
+//     const scopeMap = symbolTableManager[params.textDocument.uri];
+//     const definition = getDefinitionSymbolFromVscodePosition(parseTree, scopeMap, params.position);
+//     if (!definition) {
+//       return;
+//     }
+//     return {
+//       uri: params.textDocument.uri,
+//       range: getRangeFromSyntaxNode(definition.syntaxNode),
+//     };
+//   }
+// );
 connection.onDidChangeConfiguration((params) => {
   console.log(params.settings)
   
@@ -175,22 +151,22 @@ interface ExampleSettings {
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
 const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
-let globalSettings: ExampleSettings = defaultSettings;
+const globalSettings: ExampleSettings = defaultSettings;
 
 // Cache the settings of all open documents
 const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
 
-connection.onDidChangeConfiguration(change => {
-  if (hasConfigurationCapability) {
-    // Reset all cached document settings
-    documentSettings.clear();
-  } else {
-    globalSettings = <ExampleSettings>(change.settings.languageServerExample || defaultSettings);
-  }
+// connection.onDidChangeConfiguration(change => {
+//   if (hasConfigurationCapability) {
+//     // Reset all cached document settings
+//     documentSettings.clear();
+//   } else {
+//     globalSettings = <ExampleSettings>(change.settings.languageServerExample || defaultSettings);
+//   }
 
-  // Revalidate all open text documents
-  documents.all().forEach(validateTextDocument);
-});
+//   // Revalidate all open text documents
+//   documents.all().forEach(validateTextDocument);
+// });
 
 
 function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
@@ -221,39 +197,12 @@ connection.onDidChangeWatchedFiles(_change => {
 });
 
 // This handler provides the initial list of the completion items.
-connection.onCompletion((_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+connection.onCompletion((p): CompletionItem[] => {
   // The pass parameter contains the position of the text document in
   // which code complete got requested. For the example we ignore this
-  // info and always provide the same completion items.
-  const { position, textDocument } = _textDocumentPosition;
-  const parserTree = parseTreeManager[textDocument.uri];
-  // debugger
-  const node = parserTree.rootNode.namedDescendantForPosition({ column: position.character - 1, row: position.line });
-  if (
-    !node ||
-    (node.type !== "identifier" && (!node.previousNamedSibling || node.previousNamedSibling.type !== "ERROR"))
-  ) {
-    return [];
-  }
-  const curNode = getClosestScopeSyntaxNode(node);
-  if (!curNode) {
-    return [];
-  }
-  const scopeMap = symbolTableManager[textDocument.uri];
-  if (!scopeMap) {
-    return [];
-  }
-  const scope = scopeMap.get(curNode);
-  if (!scope) {
-    return [];
-  }
-  const completionList = getAllSymbolIdFromCurrentScope(scope).map(label => {
-    const item: CompletionItem = { label };
-    return item;
-  });
-  return completionList;
+	// info and always provide the same completion items.
+	return []
 });
-
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);

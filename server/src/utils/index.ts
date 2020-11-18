@@ -104,12 +104,11 @@ export function aliasToRelativePath(
 
 
 export function getTreeSitterEditFromChange(change: TextDocumentContentChangeEvent, document: TextDocument): Edit {
-  const range: Range = (change as any).range;
+  const range: Range  = (change as any).range;
   const text = change.text;
-  const rangeLength: number = (change as any).rangeLength;
   const startIndex = document.offsetAt(range.start);
   const oldEndIndex = document.offsetAt(range.end);
-  const newEndIndex = document.offsetAt(range.end) - rangeLength + text.length;
+  const newEndIndex = document.offsetAt(range.start) + text.length;
   const newEndPosition = document.positionAt(newEndIndex);
   const oldEndPosition = document.positionAt(oldEndIndex);
   const startPosition = document.positionAt(startIndex);
