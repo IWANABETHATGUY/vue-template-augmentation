@@ -26,9 +26,10 @@ import {
   TextEdit,
 } from 'vscode-languageserver-textdocument';
 import Parser from 'web-tree-sitter';
-import { getLineAtPosition, getTreeSitterEditFromChange } from './utils';
+import { getTreeSitterEditFromChange } from './utils';
 import { connect } from 'tls';
 import { VueTemplateCompletion } from '.';
+import { getWordRangeAtPosition } from './utils/completion';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -39,13 +40,12 @@ const connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
-const vueTemplateAugmentation = new VueTemplateCompletion();
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
+const vueTemplateAugmentation = new VueTemplateCompletion(connection.workspace);
 connection.onInitialize((params: InitializeParams) => {
   const capabilities = params.capabilities;
-
   // Does the client support the `workspace/configuration` request?
   // If not, we fall back using global settings.
   hasConfigurationCapability = !!(
@@ -54,6 +54,7 @@ connection.onInitialize((params: InitializeParams) => {
   hasWorkspaceFolderCapability = !!(
     capabilities.workspace && !!capabilities.workspace.workspaceFolders
   );
+  capabilities.workspace?.workspaceFolders;
   hasDiagnosticRelatedInformationCapability = !!(
     capabilities.textDocument &&
     capabilities.textDocument.publishDiagnostics &&
@@ -131,8 +132,13 @@ connection.onInitialized(() => {
 
   // This handler provides the initial list of the completion items.
   connection.onCompletion((p): CompletionItem[] => {
-    const document = vueTemplateAugmentation.documentManager[p.textDocument.uri];
-    console.log(getLineAtPosition(document, p.position));
+    const document =
+      vueTemplateAugmentation.documentManager[p.textDocument.uri];
+    // console.log(getLineAtPosition(document, p.position));
+    const range = getWordRangeAtPosition(document, p.position, /[\w_@\-\:]+/g);
+    if (range) {
+      console.log(document.getText(range));
+    }
     // The pass parameter contains the position of the text document in
     // which code complete got requested. For the example we ignore this
     // info and always provide the same completion items.

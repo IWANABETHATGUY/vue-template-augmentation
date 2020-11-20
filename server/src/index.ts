@@ -17,12 +17,14 @@ import glob from 'glob';
 import { promisify } from 'util';
 import { parse } from 'jsonc-parser';
 import {
+  DocumentUri,
   TextDocument,
   TextDocumentContentChangeEvent,
 } from 'vscode-languageserver-textdocument';
 import {
   DidChangeTextDocumentParams,
   DidOpenTextDocumentParams,
+  RemoteWorkspace,
   TextDocumentChangeEvent,
 } from 'vscode-languageserver';
 const globPromise = promisify(glob);
@@ -34,13 +36,14 @@ export class VueTemplateCompletion {
   private _aliasMap: Record<string, string> = {};
   documentManager: Record<string, TextDocument> = {};
   treeSitterMap: Record<string, Tree> = {};
+  workspace: RemoteWorkspace
   parser!: Parser;
   platform: string;
   // private _tagDefinition!: TemplateTagDefinition;
-  constructor() {
+  constructor(workspace:  RemoteWorkspace  ) {
     this.platform = os.platform();
     // this._context = context;
-
+    this.workspace  = workspace
     this.init().then(() => {
       // if (window.activeTextEditor) {
       //   this.recollectDependencies(window.activeTextEditor.document);
@@ -209,71 +212,74 @@ export class VueTemplateCompletion {
     //   )
     // );
   }
+
+   private async getWorkspaceFolder(uri: DocumentUri)  {
+    const uriString = uri.toString();
+    const workspaceFolders = await this.workspace.getWorkspaceFolders();
+    
+  }
   // 重新收集依赖的 引入的组件 元信息， 比如 props,event 等等
-  // private async recollectDependencies(document: TextDocument): Promise<void> {
-  //   this._sfcMetaDataMap = {};
-  //   const importReg = /import\s+([\w]+)\s+from\s*(?:('(?:.*)'|"(?:.*)"))/g;
-  //   // importMap , the key is component name, value is absolutePath
-  //   const importMap: Record<string, string> = {};
+  private async recollectDependencies(document: TextDocument): Promise<void> {
+    this._sfcMetaDataMap = {};
+    const importReg = /import\s+([\w]+)\s+from\s*(?:('(?:.*)'|"(?:.*)"))/g;
+    // importMap , the key is component name, value is absolutePath
+    const importMap: Record<string, string> = {};
 
-  //   let execResult: Nullable<RegExpExecArray> = null;
-  //   const ws = workspace.getWorkspaceFolder(document.uri);
-  //   if (!ws) {
-  //     return;
-  //   }
-  //   if (document.languageId !== 'vue') {
-  //     return;
-  //   }
-  //   // const index = ws.index;
-  //   const content = document.getText();
-  //   // get this file's dirname e.g: /test/test.vue -> `/test`
-  //   const dirName = path.dirname(document.fileName);
-  //   while ((execResult = importReg.exec(content))) {
-  //     // eslint-disable-next-line prefer-const
-  //     let [, componentName, pathOrAlias] = execResult;
-  //     pathOrAlias = pathOrAlias.slice(1, -1);
-  //     let absolutePath: string;
-  //     if (!isRelativePath(pathOrAlias)) {
-  //       pathOrAlias = aliasToRelativePath(this._aliasMap, pathOrAlias);
-  //       if (!pathOrAlias) {
-  //         continue;
-  //       }
-  //       absolutePath = pathOrAlias;
-  //     } else {
-  //       absolutePath = path.resolve(dirName, pathOrAlias);
-  //     }
+    let execResult: Nullable<RegExpExecArray> = null;
+    
+    if (document.languageId !== 'vue') {
+      return;
+    }
+    debugger
+    const content = document.getText();
+    // get this file's dirname e.g: /test/test.vue -> `/test`
+    const dirName = path.dirname(document.uri.toString());
+    while ((execResult = importReg.exec(content))) {
+      // eslint-disable-next-line prefer-const
+      let [, componentName, pathOrAlias] = execResult;
+      pathOrAlias = pathOrAlias.slice(1, -1);
+      let absolutePath: string;
+      if (!isRelativePath(pathOrAlias)) {
+        pathOrAlias = aliasToRelativePath(this._aliasMap, pathOrAlias);
+        if (!pathOrAlias) {
+          continue;
+        }
+        absolutePath = pathOrAlias;
+      } else {
+        absolutePath = path.resolve(dirName, pathOrAlias);
+      }
 
-  //     const extname = path.extname(absolutePath);
-  //     if (!extname) {
-  //       absolutePath += '.vue';
-  //     }
-  //     if (!absolutePath.endsWith('.vue')) {
-  //       continue;
-  //     }
-  //     if (await asyncFileExist(absolutePath)) {
-  //       importMap[componentName] = absolutePath;
-  //     } else if (
-  //       await asyncFileExist(absolutePath.slice(0, -4) + '/index.vue')
-  //     ) {
-  //       importMap[componentName] = absolutePath.slice(0, -4) + '/index.vue';
-  //     }
-  //   }
-  //   const promiseList = Object.keys(importMap).map(async componentName => {
-  //     try {
-  //       const ParserResult = await generateSFCMetaData(
-  //         importMap[componentName]
-  //       );
-  //       if (ParserResult) {
-  //         this._sfcMetaDataMap[componentName.toUpperCase()] = {
-  //           absolutePath: importMap[componentName],
-  //           parseResult: ParserResult,
-  //           componentName,
-  //         };
-  //       }
-  //     } catch (err) {
-  //       console.error(err);
-  //     }
-  //   });
-  //   await Promise.all(promiseList);
-  // }
+      const extname = path.extname(absolutePath);
+      if (!extname) {
+        absolutePath += '.vue';
+      }
+      if (!absolutePath.endsWith('.vue')) {
+        continue;
+      }
+      if (await asyncFileExist(absolutePath)) {
+        importMap[componentName] = absolutePath;
+      } else if (
+        await asyncFileExist(absolutePath.slice(0, -4) + '/index.vue')
+      ) {
+        importMap[componentName] = absolutePath.slice(0, -4) + '/index.vue';
+      }
+    }
+    const promiseList = Object.keys(importMap).map(async componentName => {
+      try {
+        const ParserResult = await generateSFCMetaData(
+          importMap[componentName]
+        );
+        if (ParserResult) {
+          this._sfcMetaDataMap[componentName.toUpperCase()] = {
+            absolutePath: importMap[componentName],
+            parseResult: ParserResult,
+            componentName,
+          };
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+    await Promise.all(promiseList);
+  }
 }
