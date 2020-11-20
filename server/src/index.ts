@@ -69,7 +69,10 @@ export class VueTemplateCompletion {
       version,
       text
     );
-    this.treeSitterMap[uri] = this.parser.parse(text);
+    if (this.parser) {
+      this.treeSitterMap[uri] = this.parser.parse(text);
+    }
+
     console.timeEnd('init Parsing');
   }
   onDidChangeTextDocument(params: DidChangeTextDocumentParams) {
@@ -85,49 +88,19 @@ export class VueTemplateCompletion {
           document = TextDocument.update(document, [change], version);
           parseTree = this.parser.parse(document.getText(), parseTree);
         });
-        this.treeSitterMap[documentUri] = parseTree;
       } else {
         document = TextDocument.update(
           document,
           params.contentChanges,
           params.textDocument.version
         );
+        parseTree = this.parser.parse(document.getText());
       }
+      this.treeSitterMap[documentUri] = parseTree;
       this.documentManager[documentUri] = document;
       // edit the parseTree end
       console.timeEnd('parseTree');
     }
-    // if (event.document.languageId !== 'vue') { //   return;
-    // }
-    // // console.time('increasing parse');
-    // const uri = event.document.uri.toString();
-    // const currentTree = this.treeSitterMap[uri];
-    // if (currentTree) {
-    //   for (const change of event.contentChanges) {
-    //     const startIndex = change.rangeOffset;
-    //     const oldEndIndex = change.rangeOffset + change.rangeLength;
-    //     const newEndIndex = change.rangeOffset + change.text.length;
-    //     const startPos = event.document.positionAt(startIndex);
-    //     const oldEndPos = event.document.positionAt(oldEndIndex);
-    //     const newEndPos = event.document.positionAt(newEndIndex);
-    //     const startPosition = this.asPoint(startPos);
-    //     const oldEndPosition = this.asPoint(oldEndPos);
-    //     const newEndPosition = this.asPoint(newEndPos);
-    //     const delta = {
-    //       startIndex,
-    //       oldEndIndex,
-    //       newEndIndex,
-    //       startPosition,
-    //       oldEndPosition,
-    //       newEndPosition,
-    //     };
-    //     currentTree.edit(delta);
-    //   }
-    // }
-    // this.treeSitterMap[uri] = this.parser.parse(
-    //   event.document.getText(),
-    //   currentTree
-    // );
   }
 
   private async init(): Promise<void> {

@@ -1,6 +1,12 @@
 // import { SFCMetaData } from '../types';
 // import { VueTemplateCompletion } from '..';
-// import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+// import {
+//   CompletionContext,
+//   CompletionItem,
+//   CompletionItemKind,
+//   InsertTextFormat,
+//   MarkupKind,
+// } from 'vscode-languageserver';
 // import { Position, TextDocument } from 'vscode-languageserver-textdocument';
 
 // type CompletionMap = {
@@ -31,13 +37,11 @@
 //     this._augmentationContext = context;
 //   }
 
-
 //   async provideCompletionItems(
 //     document: TextDocument,
 //     position: Position,
-//     // token: CancellationToken,
-//     // context: CompletionContext
-//   ): Promise<CompletionItem[] > {
+//     context: CompletionContext
+//   ): Promise<CompletionItem[]> {
 //     if (document.languageId !== 'vue') {
 //       return [];
 //     }
@@ -45,15 +49,11 @@
 //     let matchTagName = '';
 //     let directiveName = '';
 //     let attributeName = '';
-//     // console.time('completion parse');
-//     // const curTree = this._augmentationContext.parser.parse(document.getText());
-//     // console.timeEnd('completion parse');
 
-//     // console.time('completion process');
-//     // this._augmentationContext.tree = curTree;
-//     // use any due to SyntaxNode don't have typeId but run time have.
-//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//     const curTree = this._augmentationContext.treeSitterMap[document.uri.toString()];
+   
+//     const curTree = this._augmentationContext.treeSitterMap[
+//       document.uri.toString()
+//     ];
 //     if (!curTree) {
 //       return [];
 //     }
@@ -106,12 +106,13 @@
 //         completionList.push(
 //           ...this.getSFCData(matchTagName, 'event').map(item => ({
 //             ...item,
-//             insertText: new SnippetString(`${item.label}="$1"$2`),
+//             insertText: `${item.label}="$1"$2`,
+//             insertTextFormat: InsertTextFormat.Snippet,
 //           }))
 //         );
 //       } else if (context.triggerCharacter === ':') {
 //         // debugger;
-//         const range = getWordRangeAtPosition(
+//         const range = document(
 //           position,
 //           directiveAttributeRegExp
 //         );
@@ -123,7 +124,9 @@
 //             completionList.push(
 //               ...this.getSFCData(matchTagName, 'prop').map(item => ({
 //                 ...item,
-//                 insertText: new SnippetString(`${item.label}="$1"$2`),
+//                 insertText: `${item.label}="$1"$2`,
+//                 insertTextFormat: InsertTextFormat.Snippet,
+//                 //
 //               }))
 //             );
 //           } else if (
@@ -230,7 +233,8 @@
 //             sortText: `00000${prop.name}`,
 //             kind: CompletionItemKind.Reference,
 //             detail: `${componentName}:prop`,
-//             documentation};
+//             documentation,
+//           };
 //         });
 //         this._completionMap[tagName].prop = propsCompletion;
 //       }
@@ -244,10 +248,10 @@
 //               sortText: `00000${event.name}`,
 //               kind: CompletionItemKind.Event,
 //               detail: `${componentName}:event`,
-//               documentation: new MarkdownString('').appendCodeblock(
-//                 documentation,
-//                 'json'
-//               ),
+//               documentation: {
+//                 kind: MarkupKind.Markdown,
+//                 value: documentation,
+//               },
 //             };
 //           });
 //         this._completionMap[tagName].event = eventsCompletion;
@@ -260,11 +264,8 @@
 //             sortText: `00000${slot.name}`,
 //             kind: CompletionItemKind.Operator,
 //             detail: `${componentName}:slot`,
-//             documentation: 
-//             // documentation: new MarkdownString('').appendCodeblock(
-//             //   documentation,
-//             //   'json'
-//             // ),
+//             documentation: { kind: MarkupKind.Markdown, value: documentation },
+           
 //           };
 //         });
 //         this._completionMap[tagName].slot = eventsCompletion;

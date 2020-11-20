@@ -1,9 +1,12 @@
 import * as fs from 'fs';
 import { ParserResult, parser } from '@vuese/parser';
 import * as path from 'path';
-import { TextDocument, TextDocumentContentChangeEvent } from "vscode-languageserver-textdocument";
-import Parser, { Edit } from "web-tree-sitter";
-import { Position, Range } from "vscode-languageserver";
+import {
+  TextDocument,
+  TextDocumentContentChangeEvent,
+} from 'vscode-languageserver-textdocument';
+import Parser, { Edit } from 'web-tree-sitter';
+import { Position, Range } from 'vscode-languageserver';
 export function isRelativePath(path: string): boolean {
   return path.startsWith('./') || path.startsWith('../');
 }
@@ -16,7 +19,7 @@ export function isRelativePath(path: string): boolean {
 export function asyncFileExist(path: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
     try {
-      fs.exists(path, (exist) => {
+      fs.exists(path, exist => {
         resolve(exist);
       });
     } catch (err) {
@@ -80,7 +83,6 @@ export function generateSFCMetaData(
   });
 }
 
-
 /**
  *
  *
@@ -100,11 +102,11 @@ export function aliasToRelativePath(
   return path.resolve(aliasMap[alias], ...restPath);
 }
 
-
-
-
-export function getTreeSitterEditFromChange(change: TextDocumentContentChangeEvent, document: TextDocument): Edit {
-  const range: Range  = (change as any).range;
+export function getTreeSitterEditFromChange(
+  change: TextDocumentContentChangeEvent,
+  document: TextDocument
+): Edit {
+  const range: Range = (change as any).range;
   const text = change.text;
   const startIndex = document.offsetAt(range.start);
   const oldEndIndex = document.offsetAt(range.end);
@@ -116,9 +118,75 @@ export function getTreeSitterEditFromChange(change: TextDocumentContentChangeEve
     startIndex,
     newEndIndex,
     oldEndIndex,
-    newEndPosition: { column: newEndPosition.character, row: newEndPosition.line },
-    oldEndPosition: { column: oldEndPosition.character, row: oldEndPosition.line },
+    newEndPosition: {
+      column: newEndPosition.character,
+      row: newEndPosition.line,
+    },
+    oldEndPosition: {
+      column: oldEndPosition.character,
+      row: oldEndPosition.line,
+    },
     startPosition: { column: startPosition.character, row: startPosition.line },
   };
+}
+
+// function getWordRangeAtPosition(
+//   document: TextDocument,
+//   _position: Position,
+//   regexp?: RegExp
+// ): Range | undefined {
+//   const position = this._validatePosition(_position);
+//   // document.
+//   if (!regexp) {
+//     // use default when custom-regexp isn't provided
+//     return undefined;
+//   }
+//   document.line
+//   const wordAtText = getWordAtText(
+//     position.character + 1,
+//     ensureValidWordDefinition(regexp),
+//     this._lines[position.line],
+//     0
+//   );
+
+//   if (wordAtText) {
+//     // return new Range(
+//     //   position.line,
+//     //   wordAtText.startColumn - 1,
+//     //   position.line,
+//     //   wordAtText.endColumn - 1
+//     // );
+//     // return {start: {line: position.line, column: } end: }
+//   }
+//   return undefined;
+// }
+function getFirstBiggerIndex(arr: number[], target: number): number {
+  let i = 0;
+  let j = arr.length - 1;
+  while (i <= j) {
+    const mid = i + ~~((j - i )/ 2)
+    if (arr[mid] <= target) {
+      i = mid + 1;
+    } else {
+      j = mid - 1;
+    }
+  }
+  return i;
+  
+}
+
+export function getLineAtPosition(document: TextDocument, position: Position): string {
+  const lineOffsets = (document as any)._lineOffsets;
+  if (!lineOffsets) {
+    return '';
+  }
+  const offset = document.offsetAt(position);
+  const index = getFirstBiggerIndex(lineOffsets, offset);
+  const content = document.getText();
+  if (index == lineOffsets.length) {
+    return content.slice(lineOffsets[index - 1], content.length)
+  } else {
+    return content.slice(lineOffsets[index - 1], lineOffsets[index])
+  }
 }
 

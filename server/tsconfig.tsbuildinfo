@@ -294,8 +294,8 @@
         "signature": "3681ded22e872996545b17b21ece054c450b73b959c680a80bd8f7964ececb19"
       },
       "./src/utils/index.ts": {
-        "version": "276da690ffd7825cc18265be9856a91e2d040f514811feb87743b908beffbd22",
-        "signature": "29ca198b781dc99409abd759f253c5b235719bc5a57ee6f074f31db0bca14785"
+        "version": "73769c4db8b77197ebc1c66cd509805f6e225fdfe3c8d187224e062778cb68a9",
+        "signature": "d3b8ba9232f6e10ca96599d857b53ed345b47c275727e0fda7d16c44b4b60647"
       },
       "../node_modules/@types/minimatch/index.d.ts": {
         "version": "1d1e6bd176eee5970968423d7e215bfd66828b6db8d54d17afec05a831322633",
@@ -310,15 +310,15 @@
         "signature": "11ecb70fbc63559a0e6c64e5b694b0cb3102c0151d613a4bf2b6b85462e9c283"
       },
       "./src/index.ts": {
-        "version": "5588b9f629ed2febc16cc9fe64e89c478fae7699b6b5e0df8e58ae6ccd11531a",
+        "version": "3abd50071f859818806a368625caaec8b68b932e3540e18cc17cadf7b2bceeb5",
         "signature": "b551c0e73e0c50d06d8c3fa3e06554ed575d0e9399e14173a659102fef8144d4"
       },
       "./src/server.ts": {
-        "version": "deabf888e1ffe7ce66279de38603f9f467a848d0e1e44e83af0ed6be53046ea6",
+        "version": "2b6bc7f63ca53fda4e52c753f6ec5ecd42be6c6ea73c9eef46dece8d090df52b",
         "signature": "f761c91419d0a89422a0004ef1a92929dd4d2d5e5c16758654d8b0467d1998c6"
       },
       "./src/completion/template.ts": {
-        "version": "36b51527b78327680e611c7b637f83f3bf0305ba04ec4eee53a925768da941b0",
+        "version": "311554fa30e4a3f855ef8187dde58a00abbaa50c8c39ede26fcde19f4bad4cc4",
         "signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "./src/definition/index.ts": {
@@ -1275,7 +1275,8 @@
       "./src/utils/index.ts": [
         "./node_modules/@vuese/parser/dist/index.d.ts",
         "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts",
-        "./node_modules/web-tree-sitter/tree-sitter-web.d.ts"
+        "./node_modules/web-tree-sitter/tree-sitter-web.d.ts",
+        "./node_modules/vscode-languageserver/lib/main.d.ts"
       ],
       "../node_modules/@types/minimatch/index.d.ts": [
         "../node_modules/@types/node/base.d.ts",
@@ -1415,7 +1416,6 @@
       "./node_modules/vscode-languageserver/lib/callhierarchy.proposed.d.ts",
       "./node_modules/vscode-languageserver/lib/sematictokens.proposed.d.ts",
       "./node_modules/vscode-languageserver/lib/main.d.ts",
-      "./src/utils/index.ts",
       "../node_modules/@types/minimatch/index.d.ts",
       "../node_modules/@types/glob/index.d.ts",
       "./node_modules/jsonc-parser/lib/umd/main.d.ts",
@@ -1433,8 +1433,9 @@
       "../node_modules/@types/eslint/ts3.1/index.d.ts",
       "../node_modules/@types/eslint-visitor-keys/index.d.ts",
       "../node_modules/@types/mocha/index.d.ts",
-      "./src/index.ts",
-      "./src/server.ts"
+      "./src/utils/index.ts",
+      "./src/server.ts",
+      "./src/index.ts"
     ]
   },
   "version": "3.8.3"

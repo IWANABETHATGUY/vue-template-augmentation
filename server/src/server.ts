@@ -18,16 +18,17 @@ import {
   Location,
   CompletionItemTag,
   WorkspaceEdit,
-} from "vscode-languageserver";
+} from 'vscode-languageserver';
 
-import { TextDocument, TextDocumentContentChangeEvent, TextEdit } from "vscode-languageserver-textdocument";
-import Parser from "web-tree-sitter";
 import {
-  
-  getTreeSitterEditFromChange,
-} from "./utils";
-import { connect } from "tls";
-import { VueTemplateCompletion } from ".";
+  TextDocument,
+  TextDocumentContentChangeEvent,
+  TextEdit,
+} from 'vscode-languageserver-textdocument';
+import Parser from 'web-tree-sitter';
+import { getLineAtPosition, getTreeSitterEditFromChange } from './utils';
+import { connect } from 'tls';
+import { VueTemplateCompletion } from '.';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -35,7 +36,6 @@ const connection = createConnection(ProposedFeatures.all);
 
 // init treeParser
 // const parser = new Parser();
-
 
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -48,8 +48,12 @@ connection.onInitialize((params: InitializeParams) => {
 
   // Does the client support the `workspace/configuration` request?
   // If not, we fall back using global settings.
-  hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration);
-  hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
+  hasConfigurationCapability = !!(
+    capabilities.workspace && !!capabilities.workspace.configuration
+  );
+  hasWorkspaceFolderCapability = !!(
+    capabilities.workspace && !!capabilities.workspace.workspaceFolders
+  );
   hasDiagnosticRelatedInformationCapability = !!(
     capabilities.textDocument &&
     capabilities.textDocument.publishDiagnostics &&
@@ -81,11 +85,14 @@ connection.onInitialize((params: InitializeParams) => {
 connection.onInitialized(() => {
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
-    connection.client.register(DidChangeConfigurationNotification.type, undefined);
+    connection.client.register(
+      DidChangeConfigurationNotification.type,
+      undefined
+    );
   }
   if (hasWorkspaceFolderCapability) {
     connection.workspace.onDidChangeWorkspaceFolders(_event => {
-      connection.console.log("Workspace folder change event received.");
+      connection.console.log('Workspace folder change event received.');
     });
   }
   connection.onDidOpenTextDocument(params => {
@@ -114,12 +121,22 @@ connection.onInitialized(() => {
   // TODO: 现在只考虑 只有一个文件的情况因此只用考虑 保存一个 parseTree, 如果有多个文件的话， 需要考虑多个ParseTree,
   // 类似于documentManager
   connection.onDidChangeTextDocument(params => {
-		vueTemplateAugmentation.onDidChangeTextDocument(params);
+    vueTemplateAugmentation.onDidChangeTextDocument(params);
   });
 
   connection.onDidCloseTextDocument(params => {
     // delete parseTreeManager[params.textDocument.uri];
     // delete documentManager[params.textDocument.uri];
+  });
+
+  // This handler provides the initial list of the completion items.
+  connection.onCompletion((p): CompletionItem[] => {
+    const document = vueTemplateAugmentation.documentManager[p.textDocument.uri];
+    console.log(getLineAtPosition(document, p.position));
+    // The pass parameter contains the position of the text document in
+    // which code complete got requested. For the example we ignore this
+    // info and always provide the same completion items.
+    return [];
   });
 });
 
@@ -137,10 +154,9 @@ connection.onInitialized(() => {
 //     };
 //   }
 // );
-connection.onDidChangeConfiguration((params) => {
-  console.log(params.settings)
-  
-})
+connection.onDidChangeConfiguration(params => {
+  console.log(params.settings);
+});
 
 // The example settings
 interface ExampleSettings {
@@ -168,7 +184,6 @@ const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
 //   documents.all().forEach(validateTextDocument);
 // });
 
-
 function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
   if (!hasConfigurationCapability) {
     return Promise.resolve(globalSettings);
@@ -177,7 +192,7 @@ function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
   if (!result) {
     result = connection.workspace.getConfiguration({
       scopeUri: resource,
-      section: "languageServerExample",
+      section: 'languageServerExample',
     });
     documentSettings.set(resource, result);
   }
@@ -193,16 +208,9 @@ documents.onDidClose(e => {
 
 connection.onDidChangeWatchedFiles(_change => {
   // Monitored files have change in VSCode
-  connection.console.log("We received an file change event");
+  connection.console.log('We received an file change event');
 });
 
-// This handler provides the initial list of the completion items.
-connection.onCompletion((p): CompletionItem[] => {
-  // The pass parameter contains the position of the text document in
-  // which code complete got requested. For the example we ignore this
-	// info and always provide the same completion items.
-	return []
-});
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);
