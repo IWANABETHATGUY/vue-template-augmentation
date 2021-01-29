@@ -141,14 +141,6 @@
         "version": "e18f645693494f3154da59f9772a3dc571ce5f8b803b1e43f5d2c6a9b3a8ca0f",
         "signature": "4110eb00c2cafed71ee12b88d9d0a392cd1e551af9224471241f207c51c0c028"
       },
-      "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts": {
-        "version": "21f9731fc2e8e009fdaef137a04546c27877314c748c6702fe9329518fb16538",
-        "signature": "21f9731fc2e8e009fdaef137a04546c27877314c748c6702fe9329518fb16538"
-      },
-      "./node_modules/web-tree-sitter/tree-sitter-web.d.ts": {
-        "version": "99061de0d6dd6e68bc1df5f47743e4c9098676dc48369182d83c138b90dd4abd",
-        "signature": "99061de0d6dd6e68bc1df5f47743e4c9098676dc48369182d83c138b90dd4abd"
-      },
       "./node_modules/vscode-languageserver/typings/thenable.d.ts": {
         "version": "bfc76a4e61cdb6910c65287d4ca958d4a2e95b2e39aa3f0189a581eda3d30871",
         "signature": "bfc76a4e61cdb6910c65287d4ca958d4a2e95b2e39aa3f0189a581eda3d30871"
@@ -293,9 +285,29 @@
         "version": "3681ded22e872996545b17b21ece054c450b73b959c680a80bd8f7964ececb19",
         "signature": "3681ded22e872996545b17b21ece054c450b73b959c680a80bd8f7964ececb19"
       },
+      "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts": {
+        "version": "21f9731fc2e8e009fdaef137a04546c27877314c748c6702fe9329518fb16538",
+        "signature": "21f9731fc2e8e009fdaef137a04546c27877314c748c6702fe9329518fb16538"
+      },
+      "./src/utils/completion.ts": {
+        "version": "32b4e302203142a764e0f9b2b71aa313aa13fbba4bf92a449150f98b73d58fea",
+        "signature": "994a1a5a85b1a8497a072ca079014424e8b7ca620790e5b36111dc79aea4884b"
+      },
+      "./src/completion/template.ts": {
+        "version": "e26ba76d21cb5d8ba0fc21bff0a886fd5e1c1908a0495bec583d5a5511da9b6f",
+        "signature": "efe5ee8fe17c44ed85ddaffca3b67af9f4f3aa20da12c1cb49f1774c77d3f12b"
+      },
+      "../node_modules/upath/upath.d.ts": {
+        "version": "40391fabf54c15c70c44c538a98ca9fe751a06adae84adc9a9c2da765452a538",
+        "signature": "40391fabf54c15c70c44c538a98ca9fe751a06adae84adc9a9c2da765452a538"
+      },
+      "./node_modules/web-tree-sitter/tree-sitter-web.d.ts": {
+        "version": "99061de0d6dd6e68bc1df5f47743e4c9098676dc48369182d83c138b90dd4abd",
+        "signature": "99061de0d6dd6e68bc1df5f47743e4c9098676dc48369182d83c138b90dd4abd"
+      },
       "./src/utils/index.ts": {
-        "version": "8a4d3d10317314df2d898098857ce892c95df9e79bca82d9c95b8cce9568a128",
-        "signature": "9a7f1074f0ab85ba12fe564a973dae2cebe42f7ea35220740dac36212f746b0f"
+        "version": "cb126ac27273af8c75afb34c8ae246633a7b70c6d58e912180ea3e6f8be1c67d",
+        "signature": "a5457a5e9950a81984a92c98e480b6df54392d4d4bd9e1cb504184d370b6cbae"
       },
       "../node_modules/@types/minimatch/index.d.ts": {
         "version": "1d1e6bd176eee5970968423d7e215bfd66828b6db8d54d17afec05a831322633",
@@ -310,16 +322,12 @@
         "signature": "11ecb70fbc63559a0e6c64e5b694b0cb3102c0151d613a4bf2b6b85462e9c283"
       },
       "./src/index.ts": {
-        "version": "18e73cb8865654c240033e798ccfba3545dc513f2c3e333b2952caf526ad349c",
-        "signature": "ca2f037e0bc850ea8cb236199f6aaf7733c1742959773fd1db544794e86e4258"
+        "version": "2c198f8fe9c4354aeb1838bfc895ea8d97977f6861f0ff8406724f23b13d6ca5",
+        "signature": "123ce17a2d307da0ccc5ffa225940c80c171f35f90f5a0fb4928a3fb4a2993eb"
       },
       "./src/server.ts": {
-        "version": "ad955ed5829b8716f2f8a9210a587b7c1bc6051e9cb3f4781ab705b049526f97",
+        "version": "2e0b7b2744376870828629b58136436c46a1bd257597121acd17441da17233fe",
         "signature": "f761c91419d0a89422a0004ef1a92929dd4d2d5e5c16758654d8b0467d1998c6"
-      },
-      "./src/completion/template.ts": {
-        "version": "311554fa30e4a3f855ef8187dde58a00abbaa50c8c39ede26fcde19f4bad4cc4",
-        "signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "./src/definition/index.ts": {
         "version": "677e94918b84783d0abfa3394b39507168fc409aa40aa91c4a9791e9ac100172",
@@ -535,14 +543,6 @@
         "../node_modules/@types/node/base.d.ts",
         "../node_modules/@types/node/ts3.2/index.d.ts"
       ],
-      "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts": [
-        "../node_modules/@types/node/base.d.ts",
-        "../node_modules/@types/node/ts3.2/index.d.ts"
-      ],
-      "./node_modules/web-tree-sitter/tree-sitter-web.d.ts": [
-        "../node_modules/@types/node/base.d.ts",
-        "../node_modules/@types/node/ts3.2/index.d.ts"
-      ],
       "./node_modules/vscode-languageserver/typings/thenable.d.ts": [
         "../node_modules/@types/node/base.d.ts",
         "../node_modules/@types/node/ts3.2/index.d.ts"
@@ -780,9 +780,36 @@
         "../node_modules/@types/node/ts3.2/index.d.ts",
         "../node_modules/@types/node/base.d.ts"
       ],
+      "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts": [
+        "../node_modules/@types/node/base.d.ts",
+        "../node_modules/@types/node/ts3.2/index.d.ts"
+      ],
+      "./src/utils/completion.ts": [
+        "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts",
+        "../node_modules/@types/node/base.d.ts",
+        "../node_modules/@types/node/ts3.2/index.d.ts"
+      ],
+      "./src/completion/template.ts": [
+        "./src/types/index.ts",
+        "./src/index.ts",
+        "./node_modules/vscode-languageserver/lib/main.d.ts",
+        "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts",
+        "./src/utils/completion.ts",
+        "../node_modules/@types/node/base.d.ts",
+        "../node_modules/@types/node/ts3.2/index.d.ts"
+      ],
+      "../node_modules/upath/upath.d.ts": [
+        "../node_modules/@types/node/base.d.ts",
+        "../node_modules/@types/node/ts3.2/index.d.ts"
+      ],
+      "./node_modules/web-tree-sitter/tree-sitter-web.d.ts": [
+        "../node_modules/@types/node/base.d.ts",
+        "../node_modules/@types/node/ts3.2/index.d.ts"
+      ],
       "./src/utils/index.ts": [
         "../node_modules/@types/node/base.d.ts",
         "./node_modules/@vuese/parser/dist/index.d.ts",
+        "../node_modules/upath/upath.d.ts",
         "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts",
         "./node_modules/web-tree-sitter/tree-sitter-web.d.ts",
         "./node_modules/vscode-languageserver/lib/main.d.ts",
@@ -802,8 +829,10 @@
         "../node_modules/@types/node/ts3.2/index.d.ts"
       ],
       "./src/index.ts": [
+        "./src/completion/template.ts",
         "../node_modules/@types/node/base.d.ts",
         "./src/types/index.ts",
+        "../node_modules/upath/upath.d.ts",
         "./src/utils/index.ts",
         "./node_modules/web-tree-sitter/tree-sitter-web.d.ts",
         "../node_modules/@types/glob/index.d.ts",
@@ -819,10 +848,7 @@
         "./src/utils/index.ts",
         "../node_modules/@types/node/base.d.ts",
         "./src/index.ts",
-        "../node_modules/@types/node/ts3.2/index.d.ts"
-      ],
-      "./src/completion/template.ts": [
-        "../node_modules/@types/node/base.d.ts",
+        "./src/utils/completion.ts",
         "../node_modules/@types/node/ts3.2/index.d.ts"
       ],
       "./src/definition/index.ts": [
@@ -1027,14 +1053,6 @@
       "./src/types/index.ts": [
         "./node_modules/@vuese/parser/dist/index.d.ts"
       ],
-      "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts": [
-        "../node_modules/@types/node/base.d.ts",
-        "../node_modules/@types/node/ts3.2/index.d.ts"
-      ],
-      "./node_modules/web-tree-sitter/tree-sitter-web.d.ts": [
-        "../node_modules/@types/node/base.d.ts",
-        "../node_modules/@types/node/ts3.2/index.d.ts"
-      ],
       "./node_modules/vscode-languageserver/typings/thenable.d.ts": [
         "../node_modules/@types/node/base.d.ts",
         "../node_modules/@types/node/ts3.2/index.d.ts"
@@ -1272,11 +1290,31 @@
         "../node_modules/@types/node/ts3.2/index.d.ts",
         "../node_modules/@types/node/base.d.ts"
       ],
+      "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts": [
+        "../node_modules/@types/node/base.d.ts",
+        "../node_modules/@types/node/ts3.2/index.d.ts"
+      ],
+      "./src/utils/completion.ts": [
+        "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts"
+      ],
+      "./src/completion/template.ts": [
+        "./src/index.ts",
+        "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts",
+        "./node_modules/vscode-languageserver/lib/main.d.ts",
+        "./src/types/index.ts"
+      ],
+      "../node_modules/upath/upath.d.ts": [
+        "../node_modules/@types/node/base.d.ts",
+        "../node_modules/@types/node/ts3.2/index.d.ts"
+      ],
+      "./node_modules/web-tree-sitter/tree-sitter-web.d.ts": [
+        "../node_modules/@types/node/base.d.ts",
+        "../node_modules/@types/node/ts3.2/index.d.ts"
+      ],
       "./src/utils/index.ts": [
         "./node_modules/@vuese/parser/dist/index.d.ts",
         "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts",
-        "./node_modules/web-tree-sitter/tree-sitter-web.d.ts",
-        "./node_modules/vscode-languageserver/lib/main.d.ts"
+        "./node_modules/web-tree-sitter/tree-sitter-web.d.ts"
       ],
       "../node_modules/@types/minimatch/index.d.ts": [
         "../node_modules/@types/node/base.d.ts",
@@ -1378,8 +1416,6 @@
       "../node_modules/@types/babel__traverse/index.d.ts",
       "./node_modules/@vuese/parser/dist/index.d.ts",
       "./src/types/index.ts",
-      "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts",
-      "./node_modules/web-tree-sitter/tree-sitter-web.d.ts",
       "./node_modules/vscode-languageserver/typings/thenable.d.ts",
       "../node_modules/@types/node/inspector.d.ts",
       "../node_modules/@types/node/base.d.ts",
@@ -1416,12 +1452,16 @@
       "./node_modules/vscode-languageserver/lib/callhierarchy.proposed.d.ts",
       "./node_modules/vscode-languageserver/lib/sematictokens.proposed.d.ts",
       "./node_modules/vscode-languageserver/lib/main.d.ts",
+      "./node_modules/vscode-languageserver-textdocument/lib/umd/main.d.ts",
+      "./src/utils/completion.ts",
+      "./src/completion/template.ts",
+      "../node_modules/upath/upath.d.ts",
+      "./node_modules/web-tree-sitter/tree-sitter-web.d.ts",
       "./src/utils/index.ts",
       "../node_modules/@types/minimatch/index.d.ts",
       "../node_modules/@types/glob/index.d.ts",
       "./node_modules/jsonc-parser/lib/umd/main.d.ts",
       "./src/index.ts",
-      "./src/completion/template.ts",
       "./src/definition/index.ts",
       "./src/test/extension.test.ts",
       "../node_modules/vscode/lib/testrunner.d.ts",

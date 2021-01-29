@@ -1,6 +1,7 @@
-// import { TemplateCompletion } from './completion/template';
+import { TemplateCompletion } from './completion/template';
 import * as path from 'path';
 import { Nullable, SFCMetaData, Dictionary } from './types';
+import { toUnix } from 'upath';
 import {
   isRelativePath,
   asyncFileExist,
@@ -9,6 +10,7 @@ import {
   aliasToRelativePath,
   generateSFCMetaData,
   getTreeSitterEditFromChange,
+  transformUriToNormalizedPath,
 } from './utils';
 // import { TemplateTagDefinition } from './definition';
 import Parser, { Tree } from 'web-tree-sitter';
@@ -26,38 +28,30 @@ import {
   DidOpenTextDocumentParams,
   RemoteWorkspace,
   TextDocumentChangeEvent,
+  WorkspaceFolder,
 } from 'vscode-languageserver';
 const globPromise = promisify(glob);
 
-export class VueTemplateCompletion {
+export class VueTemplateAugmentation {
   // private _context: ExtensionContext;
   // private _completion!: TemplateCompletion;
   _sfcMetaDataMap!: Record<string, SFCMetaData>;
   private _aliasMap: Record<string, string> = {};
   documentManager: Record<string, TextDocument> = {};
   treeSitterMap: Record<string, Tree> = {};
-  workspace: RemoteWorkspace
+  workspace: RemoteWorkspace;
   parser!: Parser;
   platform: string;
+  private _completion: any;
   // private _tagDefinition!: TemplateTagDefinition;
-  constructor(workspace:  RemoteWorkspace  ) {
+  constructor(workspace: RemoteWorkspace) {
     this.platform = os.platform();
-    // this._context = context;
-    this.workspace  = workspace
-    this.init().then(() => {
-      // if (window.activeTextEditor) {
-      //   this.recollectDependencies(window.activeTextEditor.document);
-      // }
-    });
+    this.workspace = workspace;
+    this.init();
     // window.onDidChangeActiveTextEditor(async event => {
   }
-  onDidOpenTextDocument(params: DidOpenTextDocumentParams) {
+  async onDidOpenTextDocument(params: DidOpenTextDocumentParams) {
     const { uri, version, languageId, text } = params.textDocument;
-    // try {
-    //   await this.recollectDependencies(event.document);
-    // } catch (err) {
-    //   console.error(err);
-    // }
     // this.updateComponentMetaData();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // lru
@@ -76,6 +70,12 @@ export class VueTemplateCompletion {
       this.treeSitterMap[uri] = this.parser.parse(text);
     }
 
+    try {
+      await this.recollectDependencies(this.documentManager[uri]);
+      // this.updateComponentMetaData();
+    } catch (err) {
+      console.error(err);
+    }
     console.timeEnd('init Parsing');
   }
   onDidChangeTextDocument(params: DidChangeTextDocumentParams) {
@@ -108,7 +108,8 @@ export class VueTemplateCompletion {
 
   private async init(): Promise<void> {
     await this.initParser();
-    // await this.initPathAliasMap();
+    await this.initPathAliasMap();
+    debugger
     this.initCompletion();
     this.initDefinition();
   }
@@ -121,50 +122,51 @@ export class VueTemplateCompletion {
     parser.setLanguage(Lang);
     this.parser = parser;
   }
-  // private async initPathAliasMap(): Promise<void> {
-  //   const folders = workspace.workspaceFolders;
-  //   let workdir = '';
-  //   if (folders) {
-  //     workdir = workspace.getWorkspaceFolder(folders[0].uri)?.uri.path ?? '';
-  //   }
-  //   if (!workdir) {
-  //     return;
-  //   }
-  //   if (this.platform === 'win32') {
-  //     workdir = workdir.slice(1);
-  //   }
-  //   let absoluteJsConfigJsonPathList: string[] = [];
-  //   let absoluteTsConfigJsonPathList: string[] = [];
-  //   try {
-  //     absoluteJsConfigJsonPathList = await globPromise(
-  //       `${workdir}/jsconfig.json`
-  //     );
-  //     absoluteTsConfigJsonPathList = await globPromise(
-  //       `${workdir}/tsconfig.json`
-  //     );
-  //     await Promise.all(
-  //       absoluteJsConfigJsonPathList.map(async configPath => {
-  //         await this.generateAliasPathFromConfigJson(configPath, workdir);
-  //       })
-  //     );
-  //     await Promise.all(
-  //       absoluteTsConfigJsonPathList.map(async configPath => {
-  //         try {
-  //           await this.generateAliasPathFromConfigJson(configPath, workdir);
-  //         } catch (err) {
-  //           console.warn(err);
-  //         }
-  //       })
-  //     );
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // }
+  private async initPathAliasMap(): Promise<void> {
+    const folders = await this.workspace.getWorkspaceFolders();
+    let workdir = '';
+    if (folders) {
+      workdir = transformUriToNormalizedPath((await this.getWorkspaceFolder(folders[0].uri))?.uri ?? '');
+    }
+    if (!workdir) {
+      return;
+    }
+    // if (this.platform === 'win32') {
+    //   workdir = workdir.slice(1);
+    // }
+    let absoluteJsConfigJsonPathList: string[] = [];
+    let absoluteTsConfigJsonPathList: string[] = [];
+    try {
+      absoluteJsConfigJsonPathList = await globPromise(
+        `${workdir}/jsconfig.json`
+      );
+      absoluteTsConfigJsonPathList = await globPromise(
+        `${workdir}/tsconfig.json`
+      );
+      await Promise.all(
+        absoluteJsConfigJsonPathList.map(async configPath => {
+          await this.generateAliasPathFromConfigJson(configPath, workdir);
+        })
+      );
+      await Promise.all(
+        absoluteTsConfigJsonPathList.map(async configPath => {
+          try {
+            await this.generateAliasPathFromConfigJson(configPath, workdir);
+          } catch (err) {
+            console.warn(err);
+          }
+        })
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   private async generateAliasPathFromConfigJson(
     absoluteConfigJsonPath: string,
     workdir: string
   ): Promise<void> {
+    debugger;
     if (!(await asyncFileExist(absoluteConfigJsonPath))) {
       return;
     }
@@ -191,7 +193,7 @@ export class VueTemplateCompletion {
   }
 
   private initCompletion(): void {
-    // this._completion = new TemplateCompletion(this);
+    this._completion = new TemplateCompletion(this);
     // this._context.subscriptions.push(
     //   languages.registerCompletionItemProvider(
     //     [{ language: 'vue', scheme: 'file' }],
@@ -213,10 +215,14 @@ export class VueTemplateCompletion {
     // );
   }
 
-   private async getWorkspaceFolder(uri: DocumentUri)  {
+  private async getWorkspaceFolder(
+    uri: DocumentUri
+  ): Promise<WorkspaceFolder | undefined> {
     const uriString = uri.toString();
-    const workspaceFolders = await this.workspace.getWorkspaceFolders();
-    
+    const workSpaceList = await this.workspace.getWorkspaceFolders();
+    if (workSpaceList) {
+      return workSpaceList.find(ws => ws.uri.toString() === uriString);
+    }
   }
   // 重新收集依赖的 引入的组件 元信息， 比如 props,event 等等
   private async recollectDependencies(document: TextDocument): Promise<void> {
@@ -226,11 +232,10 @@ export class VueTemplateCompletion {
     const importMap: Record<string, string> = {};
 
     let execResult: Nullable<RegExpExecArray> = null;
-    
+
     if (document.languageId !== 'vue') {
       return;
     }
-    debugger
     const content = document.getText();
     // get this file's dirname e.g: /test/test.vue -> `/test`
     const dirName = path.dirname(document.uri.toString());

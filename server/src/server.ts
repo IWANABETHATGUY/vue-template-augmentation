@@ -28,7 +28,7 @@ import {
 import Parser from 'web-tree-sitter';
 import { getTreeSitterEditFromChange } from './utils';
 import { connect } from 'tls';
-import { VueTemplateCompletion } from '.';
+import { VueTemplateAugmentation } from '.';
 import { getWordRangeAtPosition } from './utils/completion';
 
 // Create a connection for the server, using Node's IPC as a transport.
@@ -43,7 +43,7 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
-const vueTemplateAugmentation = new VueTemplateCompletion(connection.workspace);
+let vueTemplateAugmentation: any;
 connection.onInitialize((params: InitializeParams) => {
   const capabilities = params.capabilities;
   // Does the client support the `workspace/configuration` request?
@@ -68,8 +68,8 @@ connection.onInitialize((params: InitializeParams) => {
       completionProvider: {
         resolveProvider: true,
       },
-      definitionProvider: true,
-      renameProvider: true,
+      // definitionProvider: true,
+      // renameProvider: true,
       referencesProvider: true,
     },
   };
@@ -84,6 +84,7 @@ connection.onInitialize((params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
+  vueTemplateAugmentation = new VueTemplateAugmentation(connection.workspace);
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
     connection.client.register(
@@ -135,7 +136,8 @@ connection.onInitialized(() => {
     const document =
       vueTemplateAugmentation.documentManager[p.textDocument.uri];
     // console.log(getLineAtPosition(document, p.position));
-    const range = getWordRangeAtPosition(document, p.position, /[\w_@\-\:]+/g);
+    // /[\w_@\-\:]+/
+    const range = getWordRangeAtPosition(document, p.position, /[\w_@\-\:]+/);
     if (range) {
       console.log(document.getText(range));
     }

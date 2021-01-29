@@ -60,6 +60,7 @@ function _findRegexMatchEnclosingPosition(
   return null;
 }
 
+
 export function getWordAtText(
   column: number,
   wordDefinition: RegExp,

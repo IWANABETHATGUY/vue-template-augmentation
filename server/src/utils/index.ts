@@ -1,12 +1,14 @@
 import * as fs from 'fs';
 import { ParserResult, parser } from '@vuese/parser';
 import * as path from 'path';
+import * as upath from 'upath';
 import {
   TextDocument,
   TextDocumentContentChangeEvent,
 } from 'vscode-languageserver-textdocument';
 import Parser, { Edit } from 'web-tree-sitter';
 import { Position, Range } from 'vscode-languageserver';
+
 export function isRelativePath(path: string): boolean {
   return path.startsWith('./') || path.startsWith('../');
 }
@@ -128,4 +130,18 @@ export function getTreeSitterEditFromChange(
     },
     startPosition: { column: startPosition.character, row: startPosition.line },
   };
+}
+
+/**
+ *
+ *
+ * @export
+ * @param {string} path
+ * @returns {string} a normalized unix format path
+ */
+export function transformUriToNormalizedPath(path: string): string {
+  if (path.startsWith('file:///')) {
+    path = path.slice(8)
+  }
+  return decodeURIComponent(upath.toUnix(path));
 }
