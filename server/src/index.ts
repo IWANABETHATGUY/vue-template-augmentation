@@ -109,7 +109,6 @@ export class VueTemplateAugmentation {
   private async init(): Promise<void> {
     await this.initParser();
     await this.initPathAliasMap();
-    debugger
     this.initCompletion();
     this.initDefinition();
   }
@@ -166,7 +165,6 @@ export class VueTemplateAugmentation {
     absoluteConfigJsonPath: string,
     workdir: string
   ): Promise<void> {
-    debugger;
     if (!(await asyncFileExist(absoluteConfigJsonPath))) {
       return;
     }

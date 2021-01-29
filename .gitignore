@@ -5,3 +5,5 @@ node_modules
 .DS_Store
 test.js
 dist/
+client/tsconfig.tsbuildinfo
+client/tsconfig.tsbuildinfo

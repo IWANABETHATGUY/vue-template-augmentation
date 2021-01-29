@@ -290,7 +290,7 @@
         "signature": "cb7168d850d3282e25ce0bf9b747c86ae5e16ebe51cca1108d678ee5dacc18ca"
       },
       "./src/extension.ts": {
-        "version": "4b328645e938c69d72b9c34f4b204dbe1eedbfd3ff3cadd8da484690244cd1c4",
+        "version": "08b9fdde77306b27913ab18db6f8104f6712b83de4ca50ee90afba8004229eaa",
         "signature": "86f0fb23c01694d99a0b5780aeed49946d980b6eb7d8e35be86325153a10355d"
       },
       "../node_modules/@babel/types/lib/index.d.ts": {

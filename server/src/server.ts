@@ -108,6 +108,9 @@ connection.onInitialized(() => {
     // params.uri uniquely identifies the document. For documents stored on disk, this is a file URI.
     // params.text the initial full content of the document.
   });
+  connection.onNotification('template-augmentation/changeActiveTextEditor', (event) => {
+    console.log(event)
+  })
   // connection.onDidSaveTextDocument(params => {
   //   const { uri } = params.textDocument;
   //   const document = documentManager[uri];
